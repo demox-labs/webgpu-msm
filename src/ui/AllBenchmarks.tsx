@@ -5,7 +5,7 @@ import { point_mul_multi } from '../webgpu/entries/curveMulPointMultiPassEntry';
 import { FieldMath } from '../utils/FieldMath';
 import { naive_msm } from '../webgpu/entries/naiveMSMEntry';
 import { bulkGroupScalarMul, msm } from '../utils/wasmFunctions';
-import { generateRandomFields, bigIntsToU32Array, stripGroupSuffix, generateRandomPointXs } from '../webgpu/utils';
+import { bigIntsToU32Array, stripGroupSuffix } from '../webgpu/utils';
 
 const pointScalarGenerator = (inputSize: number): bigint[][] => {
   const groupArr = new Array(inputSize);
@@ -17,9 +17,9 @@ const pointScalarGenerator = (inputSize: number): bigint[][] => {
   return [groupArr, scalarArr];
 };
 
-const randomPointScalarGenerator = (inputSize: number): bigint[][] => {
-  return [generateRandomPointXs(inputSize), generateRandomFields(inputSize)];
-}
+// const randomPointScalarGenerator = (inputSize: number): bigint[][] => {
+//   return [generateRandomPointXs(inputSize), generateRandomFields(inputSize)];
+// }
 
 const gpuPointScalarInputConverter = (inputs: bigint[][]): number[][] => {
   const x_coords = inputs[0];

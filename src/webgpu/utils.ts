@@ -1,7 +1,6 @@
 import { ALEO_FIELD_MODULUS } from "../params/AleoConstants";
 import * as utils from '@noble/curves/abstract/utils';
 import { FieldMath } from "../utils/FieldMath";
-import BN from "bn.js";
 
 // assume bigints are big endian 256-bit integers
 export const bigIntsToU32Array = (beBigInts: bigint[]): Uint32Array => {
