@@ -144,9 +144,9 @@ export const bulkPowFields17 = async (inputs1: string[]): Promise<string[]> => {
     results.push(await aleo.Address.pow_field(inputs1[i], '17field'));
   }
   return results;
-}
+};
 
-export const msm = async (groups: string[], scalars: string[]): Promise<string[]> => {
+export const msm = async (groups: string[], scalars: string[]): Promise<string> => {
   const aleo = await loadWasmModule();
-  return [aleo.Address.msm(groups, scalars)];
-}
+  return aleo.Address.msm(groups, scalars);
+};

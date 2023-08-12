@@ -4,12 +4,12 @@ import { U256WGSL } from "../wgsl/U256";
 import { CurveWGSL } from "../wgsl/Curve";
 import { FieldModulusWGSL } from "../wgsl/FieldModulus";
 import { workgroupSize } from "../params";
-import { bigIntToU32Array, u32ArrayToBigInts } from "../utils";
+import { u32ArrayToBigInts } from "../utils";
 import { IEntryInfo, IGPUInput, IGPUResult, IShaderCode, multipassEntryCreator } from "./multipassEntryCreator";
 import { GPUExecution } from "./multipassEntryCreator";
 
-export const naive_msm = async (input1: Array<number>, input2: Array<number>) => {
-  const [execution, entryInfo] = point_mul_multipass_info(input1.length / 16, input1, input2, true);
+export const naive_msm = async (flattenedPoints: Array<number>, scalars: Array<number>): Promise<{x: bigint, y: bigint}> => {
+  const [execution, entryInfo] = point_mul_multipass_info(flattenedPoints.length / 16, flattenedPoints, scalars, true);
 
   const bufferResult = await multipassEntryCreator(execution, entryInfo);
   const bigIntResult = u32ArrayToBigInts(bufferResult || new Uint32Array(0));
@@ -28,12 +28,8 @@ export const naive_msm = async (input1: Array<number>, input2: Array<number>) =>
     pointArray.push(point);
   }
 
-  const preAddTime = performance.now();
   const affineResult = fieldMath.addPoints(pointArray);
-  const postAddTime = performance.now();
-  console.log('reduction time: ' + (postAddTime - preAddTime) + 'ms');
-  const u32XCoord = bigIntToU32Array(affineResult.x);
-  return u32XCoord;
+  return {x: affineResult.x, y: affineResult.y};
 }
 
 export const point_mul_multipass_info = (
