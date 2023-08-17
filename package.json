@@ -6,9 +6,14 @@
     "start": "webpack serve --config webpack.dev.config.cjs",
     "lint": "eslint --ext .js,.ts .",
     "test": "node --experimental-vm-modules $(yarn bin jest)",
-    "runningProcesses": "sudo lsof -i :4040"
+    "runningProcesses": "sudo lsof -i :4040",
+    "convertPowersOfBeta": "ts-node --project ts-config-utility.json ./src/test-data/convert-binary-to-big-ints.ts",
+    "convertXsToPoints": "ts-node --project ts-config-utility.json ./src/test-data/convert-x-to-points.ts",
+    "generatePointsTestFile": "ts-node --project ts-config-utility.json ./src/test-data/createRandomAffinePoints.ts"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.16",
+    "@heroicons/react": "^2.0.18",
     "@noble/curves": "1.0.0",
     "@types/node": "^20.4.9",
     "@webgpu/types": "^0.1.30",
@@ -40,6 +45,7 @@
     "autoprefixer": "^10.4.14",
     "babel-loader": "^8.2.3",
     "clean-webpack-plugin": "^4.0.0",
+    "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint": "^8.11.0",
     "eslint-plugin-react": "^7.29.3",

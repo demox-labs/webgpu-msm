@@ -2,8 +2,12 @@ import { CurveFn, ExtPointType, twistedEdwards } from "@noble/curves/abstract/ed
 import { sha512 } from '@noble/hashes/sha512';
 import { Field, IField } from "@noble/curves/abstract/modular";
 import { randomBytes } from "crypto";
-import { ALEO_FIELD_MODULUS, EDWARDS_A, EDWARDS_D, SUBGROUP_CHARACTERISTIC } from "../params/AleoConstants";
 import { AffinePoint } from "@noble/curves/abstract/curve";
+
+export const ALEO_FIELD_MODULUS = BigInt('8444461749428370424248824938781546531375899335154063827935233455917409239041');
+export const EDWARDS_A = BigInt('8444461749428370424248824938781546531375899335154063827935233455917409239040');
+export const EDWARDS_D = BigInt('3021');
+export const SUBGROUP_CHARACTERISTIC = BigInt('2111115437357092606062206234695386632838870926408408195193685246394721360383');
 
 export class FieldMath {
   customEdwards: CurveFn;

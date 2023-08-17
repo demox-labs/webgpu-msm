@@ -1,6 +1,4 @@
 import { ALEO_FIELD_MODULUS } from "../params/AleoConstants";
-import * as utils from '@noble/curves/abstract/utils';
-import { FieldMath } from "../utils/FieldMath";
 
 // assume bigints are big endian 256-bit integers
 export const bigIntsToU32Array = (beBigInts: bigint[]): Uint32Array => {
@@ -50,20 +48,6 @@ export const generateRandomFields = (inputSize: number): bigint[] => {
   const randomBigInts = [];
   for (let i = 0; i < inputSize; i++) {
     randomBigInts.push(createRandomAleoFieldInt());
-  }
-
-  return randomBigInts;
-};
-
-export const generateRandomPointXs = (inputSize: number): bigint[] => {
-  const randomBigInts: bigint[] = [];
-  const fieldMath = new FieldMath();
-  for (let i = 0; i < inputSize; i++) {
-    const randomField = createRandomAleoFieldInt();
-    const hash = fieldMath.customEdwards.CURVE.hash(randomField.toString());
-    const x = utils.bytesToNumberBE(hash.slice(0,32));
-    
-    randomBigInts.push(x % ALEO_FIELD_MODULUS);
   }
 
   return randomBigInts;
