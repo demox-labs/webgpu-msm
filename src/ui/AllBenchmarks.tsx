@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Benchmark } from './Benchmark';
 import { generateRandomFields } from '../reference/webgpu/utils';
 import { Point } from '../reference/types';
-import { webgpu_compute_msm, wasm_compute_msm } from '../reference/reference';
+import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm } from '../reference/reference';
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
 import { TestCaseDropDown } from './TestCaseDropDown';
@@ -74,6 +74,14 @@ export const AllBenchmarks: React.FC = () => {
         <CSVExportButton data={benchmarkResults} filename={'msm-benchmark'} />
       </div>
       
+      <Benchmark
+        name={'Pippenger WebGPU MSM'}
+        baseAffinePoints={baseAffinePoints}
+        scalars={scalars}
+        expectedResult={expectedResult}
+        msmFunc={webgpu_pippenger_msm}
+        postResult={postResult}
+      />
       <Benchmark
         name={'Naive WebGPU MSM'}
         baseAffinePoints={baseAffinePoints}

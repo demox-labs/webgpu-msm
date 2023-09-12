@@ -1,7 +1,7 @@
 import { CurveWGSL } from "../wgsl/Curve";
 import { FieldModulusWGSL } from "../wgsl/FieldModulus";
 import { U256WGSL } from "../wgsl/U256";
-import { workgroupSize } from "../params";
+import { WORKGROUP_SIZE } from "../params";
 import { IEntryInfo, IGPUInput, IGPUResult, IShaderCode, multipassEntryCreator } from "./multipassEntryCreator";
 import { GPUExecution } from "./multipassEntryCreator";
 
@@ -28,7 +28,7 @@ export const point_mul_multipass_info = (
     @group(0) @binding(1)
     var<storage, read_write> output: array<Point>;
 
-    @compute @workgroup_size(${workgroupSize})
+    @compute @workgroup_size(${WORKGROUP_SIZE})
     fn main(
       @builtin(global_invocation_id) global_id : vec3<u32>
     ) {
@@ -53,7 +53,7 @@ export const point_mul_multipass_info = (
     @group(0) @binding(4)
     var<storage, read_write> newTemps: array<Point>;
 
-    @compute @workgroup_size(${workgroupSize})
+    @compute @workgroup_size(${WORKGROUP_SIZE})
     fn main(
       @builtin(global_invocation_id) global_id : vec3<u32>
     ) {
@@ -81,7 +81,7 @@ export const point_mul_multipass_info = (
     @group(0) @binding(5)
     var<storage, read_write> newTemps: array<Point>;
 
-    @compute @workgroup_size(${workgroupSize})
+    @compute @workgroup_size(${WORKGROUP_SIZE})
     fn main(
       @builtin(global_invocation_id) global_id : vec3<u32>
     ) {
@@ -105,7 +105,7 @@ export const point_mul_multipass_info = (
     @group(0) @binding(3)
     var<storage, read_write> output: array<Point>;
 
-    @compute @workgroup_size(${workgroupSize})
+    @compute @workgroup_size(${WORKGROUP_SIZE})
     fn main(
       @builtin(global_invocation_id) global_id : vec3<u32>
     ) {
@@ -123,7 +123,7 @@ export const point_mul_multipass_info = (
     @group(0) @binding(1)
     var<storage, read_write> output: Fields;
 
-    @compute @workgroup_size(${workgroupSize})
+    @compute @workgroup_size(${WORKGROUP_SIZE})
     fn main(
       @builtin(global_invocation_id) global_id : vec3<u32>
     ) {
