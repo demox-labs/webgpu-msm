@@ -74,9 +74,10 @@ const config = {
     port: 4040,
     open: true,
     hot: true,
+    client: {
+      overlay: false
+    }
   },
 };
-
-// export default config;
 
 module.exports = config;

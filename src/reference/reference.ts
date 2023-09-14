@@ -40,15 +40,9 @@ export const wasm_compute_msm = async (
   return new FieldMath().getPointFromX(BigInt(xNum));
 };
 
-const NAIVE_LIMIT = 100_000;
-
 export const webgpu_best_msm = async (
   baseAffinePoints: BigIntPoint[] | U32ArrayPoint[],
   scalars: bigint[] | Uint32Array[]
   ): Promise<{x: bigint, y: bigint}> => {
-    if (scalars.length < NAIVE_LIMIT) {
-      return await webgpu_compute_msm(baseAffinePoints, scalars);
-    } else {
-      return await webgpu_pippenger_msm(baseAffinePoints, scalars);
-    }
+    return await webgpu_pippenger_msm(baseAffinePoints, scalars);
   };
