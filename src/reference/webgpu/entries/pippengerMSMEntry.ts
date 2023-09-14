@@ -36,15 +36,6 @@ import { EXT_POINT_SIZE, FIELD_SIZE } from "../params";
 ///        T <- (2^c) * T
 ///        T <- T + T_j
 
-// Creates a map of 2**16 - 1 keys with the Zero point initialized for each value
-const initializeMsmMap = (fieldMath: FieldMath, c: number): Map<number, ExtPointType> => {
-    const T = new Map();
-    for (let i = 0; i < Math.pow(2, c); i++) {
-        T.set(i, fieldMath.customEdwards.ExtendedPoint.ZERO);
-    }
-    return T;
-}
-
 // Breaks up an array into separate arrays of size chunkSize
 function chunkArray<T>(inputArray: T[], chunkSize = 20000): T[][] {
     let index = 0;
@@ -74,7 +65,7 @@ export const pippinger_msm = async (
     const numMsms = 256/C;
     const msms: Map<number, ExtPointType>[] = [];
     for (let i = 0; i < numMsms; i++) {
-        msms.push(initializeMsmMap(fieldMath, C));
+        msms.push(new Map<number, ExtPointType>());
     }
 
     ///
@@ -90,7 +81,9 @@ export const pippinger_msm = async (
         const msmIndex = scalarIndex % msms.length;
         
         const currentPoint = msms[msmIndex].get(scalar);
-        if (currentPoint !== undefined) {
+        if (currentPoint === undefined) {
+          msms[msmIndex].set(scalar, pointToAdd);
+        } else {
           msms[msmIndex].set(scalar, currentPoint.add(pointToAdd));
         }
         
@@ -147,17 +140,16 @@ export const pippinger_msm = async (
     /// SUMMATION OF SCALAR MULTIPLICATIONS FOR EACH MSM
     ///
     const msmResults = [];
-    let currentSum = fieldMath.customEdwards.ExtendedPoint.ZERO;
-    for (let i = 0; i < gpuResultsAsExtendedPoints.length; i++) {
-        currentSum = currentSum.add(gpuResultsAsExtendedPoints[i]);
-
-        if (i % 65536 === 0 && i !== 0) {
-            msmResults.push(currentSum);
-            currentSum = fieldMath.customEdwards.ExtendedPoint.ZERO;
-        }
+    const bucketing = msms.map(msm => msm.size);
+    let prevBucketSum = 0;
+    for (const bucket of bucketing) {
+      let currentSum = fieldMath.customEdwards.ExtendedPoint.ZERO;
+      for (let i = 0; i < bucket; i++) {
+        currentSum = currentSum.add(gpuResultsAsExtendedPoints[i + prevBucketSum]);
+      }
+      msmResults.push(currentSum);
+      prevBucketSum += bucket;
     }
-    
-    msmResults.push(currentSum);
 
     ///
     /// SOLVE FOR ORIGINAL MSM
