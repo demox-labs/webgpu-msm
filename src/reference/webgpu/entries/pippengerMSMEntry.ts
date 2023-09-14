@@ -60,8 +60,7 @@ function chunkArray<T>(inputArray: T[], chunkSize = 20000): T[][] {
 } 
 
 export const pippinger_msm = async (
-  points: ExtPointType[], 
-  // uint32Arrays: Uint32Array[], 
+  points: ExtPointType[],
   scalars: number[], 
   fieldMath: FieldMath
   ) => {
