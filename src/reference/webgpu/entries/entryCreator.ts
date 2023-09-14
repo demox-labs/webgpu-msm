@@ -1,18 +1,15 @@
+import { gpuU32Inputs } from "../utils";
+
 export const entry = async(
-  inputsAsArrays: Array<number>[],
+  inputData: gpuU32Inputs[],
   shaderModules: string[],
-  byteSizePerFirstInput?: number,
-  byteSizePerOutput?: number
+  u32SizePerOutput: number
   ) => {
-  const inputs = inputsAsArrays.map((input) => new Uint32Array(input));
-  const bytesPerFirstInput = byteSizePerFirstInput ?? 8;
-  const bytesPerOutput = byteSizePerOutput ?? 8;
-  const firstSetOfInputs = inputs[0];
-  
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const device = (await getDevice())!;
+  const allBuffers: GPUBuffer[] = [];
   
-  const numInputs = firstSetOfInputs.length / bytesPerFirstInput;
+  const numInputs = inputData[0].u32Inputs.length / inputData[0].individualInputSize;
 
   let shaderCode = '';
   for (const shaderModule of shaderModules) {
@@ -23,10 +20,10 @@ export const entry = async(
     code: shaderCode
   });
 
-  const gpuBufferInputs = inputs.map((input) => createU32ArrayInputBuffer(device, input));
+  const gpuBufferInputs = inputData.map((data) => createU32ArrayInputBuffer(device, data.u32Inputs));
 
   // Result Matrix
-  const resultBufferSize = Uint32Array.BYTES_PER_ELEMENT * numInputs * bytesPerOutput;
+  const resultBufferSize = Uint32Array.BYTES_PER_ELEMENT * numInputs * u32SizePerOutput;
   const resultBuffer = device.createBuffer({
     size: resultBufferSize,
     usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC
@@ -64,6 +61,10 @@ export const entry = async(
     usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ
   });
 
+  allBuffers.push(...gpuBufferInputs);
+  allBuffers.push(resultBuffer);
+  allBuffers.push(gpuReadBuffer);
+
   // Encode commands for copying buffer to buffer.
   commandEncoder.copyBufferToBuffer(
     resultBuffer /* source buffer */,
@@ -82,6 +83,12 @@ export const entry = async(
   const arrayBuffer = gpuReadBuffer.getMappedRange();
   const result = new Uint32Array(arrayBuffer.slice(0));
   gpuReadBuffer.unmap();
+
+  // Destroy all buffers
+  for (const buffer of allBuffers) {
+    buffer.destroy();
+  }
+  device.destroy();
   
   return result;
 }

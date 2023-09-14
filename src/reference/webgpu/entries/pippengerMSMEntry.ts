@@ -1,9 +1,9 @@
 import { CurveWGSL } from "../wgsl/Curve";
 import { FieldModulusWGSL } from "../wgsl/FieldModulus";
-import { entry } from "./pippengerEntryCreator"
+import { entry } from "./entryCreator"
 import { ExtPointType } from "@noble/curves/abstract/edwards";
 import { FieldMath } from "../../utils/FieldMath";
-import { bigIntToU32Array, bigIntsToU32Array, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
+import { bigIntsToU32Array, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
 import { U256WGSL } from "../wgsl/U256";
 import { EXT_POINT_SIZE, FIELD_SIZE } from "../params";
 
@@ -234,6 +234,3 @@ const point_mul = async (
   
     return await entry([input1, input2], shaderModules, EXT_POINT_SIZE);
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).pippinger_msm = pippinger_msm;
