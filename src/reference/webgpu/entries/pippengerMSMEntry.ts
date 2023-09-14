@@ -59,7 +59,12 @@ function chunkArray<T>(inputArray: T[], chunkSize = 20000): T[][] {
     return tempArray;
 } 
 
-export const pippinger_msm = async (points: ExtPointType[], scalars: number[], fieldMath: FieldMath) => {
+export const pippinger_msm = async (
+  points: ExtPointType[], 
+  // uint32Arrays: Uint32Array[], 
+  scalars: number[], 
+  fieldMath: FieldMath
+  ) => {
     const C = 16;
 
     ///
@@ -117,18 +122,10 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
     const chunkedScalars = chunkArray(scalarsConcatenated, 11000);
 
     const gpuResultsAsBigInts = [];
-    const avgGpuChunkCalculationTimes = [];
-    const avgU32ToBigIntConversionTime = [];
     for (let i = 0; i < chunkedPoints.length; i++) {
-        const chunkCalculationStart = performance.now();
         const bufferResult = await point_mul({ u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, { u32Inputs: Uint32Array.from(chunkedScalars[i]), individualInputSize: FIELD_SIZE });
-        const chunkCalculationEnd = performance.now();
-        avgGpuChunkCalculationTimes.push(chunkCalculationEnd - chunkCalculationStart);
         
-        const u32Start = performance.now();
         gpuResultsAsBigInts.push(...u32ArrayToBigInts(bufferResult || new Uint32Array(0)));
-        const u32End = performance.now();
-        avgU32ToBigIntConversionTime.push(u32End - u32Start);
     }
 
     ///

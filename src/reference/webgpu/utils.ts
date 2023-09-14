@@ -39,24 +39,41 @@ export const bigIntsToU32Array = (beBigInts: bigint[]): Uint32Array => {
   return u32Array;
 };
 
+// export const bigIntToU32Array = (beBigInt: bigint): Uint32Array => {
+//   const numBits = 256;
+//   const bitsPerElement = 32;
+//   const numElements = numBits / bitsPerElement;
+//   const u32Array = new Uint32Array(numElements);
+//   const nonZeroBitString = beBigInt.toString(2);
+//   const paddedZeros = '0'.repeat(numBits - nonZeroBitString.length);
+//   const bitString = paddedZeros + nonZeroBitString;
+//   for (let i = 0; i < numElements; i++) {
+//     const startIndex = i * bitsPerElement;
+//     const endIndex = startIndex + bitsPerElement;
+//     const bitStringSlice = bitString.slice(startIndex, endIndex);
+//     const u32 = parseInt(bitStringSlice, 2);
+//     u32Array[i] = u32;
+//   }
+
+//   return u32Array;
+// };
+
 export const bigIntToU32Array = (beBigInt: bigint): Uint32Array => {
   const numBits = 256;
   const bitsPerElement = 32;
   const numElements = numBits / bitsPerElement;
   const u32Array = new Uint32Array(numElements);
-  const nonZeroBitString = beBigInt.toString(2);
-  const paddedZeros = '0'.repeat(numBits - nonZeroBitString.length);
-  const bitString = paddedZeros + nonZeroBitString;
-  for (let i = 0; i < numElements; i++) {
-    const startIndex = i * bitsPerElement;
-    const endIndex = startIndex + bitsPerElement;
-    const bitStringSlice = bitString.slice(startIndex, endIndex);
-    const u32 = parseInt(bitStringSlice, 2);
-    u32Array[i] = u32;
+
+  let tempBigInt = beBigInt;
+  for (let i = numElements - 1; i >= 0; i--) {
+    const mask = BigInt((1 << bitsPerElement) - 1); // Create a mask for the lower 32 bits
+    u32Array[i] = Number(tempBigInt & mask); // Extract the lower 32 bits
+    tempBigInt >>= BigInt(bitsPerElement); // Right-shift the remaining bits
   }
 
   return u32Array;
 };
+
 
 export const u32ArrayToBigInts = (u32Array: Uint32Array): bigint[] => {
   const bigInts = [];
