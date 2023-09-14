@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Benchmark } from './Benchmark';
 import { bigIntToU32Array, generateRandomFields } from '../reference/webgpu/utils';
 import { BigIntPoint, U32ArrayPoint } from '../reference/types';
-import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm } from '../reference/reference';
+import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm, webgpu_best_msm } from '../reference/reference';
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
 import { TestCaseDropDown } from './TestCaseDropDown';
@@ -106,8 +106,10 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Naive WebGPU MSM'}
-        baseAffinePoints={u32Points}
-        scalars={u32Scalars}
+        // baseAffinePoints={u32Points}
+        // scalars={u32Scalars}
+        baseAffinePoints={baseAffineBigIntPoints}
+        scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={webgpu_compute_msm}
         postResult={postResult}
@@ -118,6 +120,14 @@ export const AllBenchmarks: React.FC = () => {
         scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={wasm_compute_msm}
+        postResult={postResult}
+      />
+      <Benchmark
+        name={'Our Best WebGPU MSM'}
+        baseAffinePoints={baseAffineBigIntPoints}
+        scalars={bigIntScalars}
+        expectedResult={expectedResult}
+        msmFunc={webgpu_best_msm}
         postResult={postResult}
       />
       <Benchmark
