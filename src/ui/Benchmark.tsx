@@ -6,6 +6,7 @@ import { CheckIcon } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 
 interface BenchmarkProps {
+  bold?: boolean;
   name: string;
   baseAffinePoints: BigIntPoint[] | U32ArrayPoint[];
   scalars: bigint[] | Uint32Array[];
@@ -18,7 +19,7 @@ interface BenchmarkProps {
 }
 
 export const Benchmark: React.FC<BenchmarkProps> = (
-  {name, baseAffinePoints, scalars, expectedResult, msmFunc, postResult}
+  {bold, name, baseAffinePoints, scalars, expectedResult, msmFunc, postResult}
   ) => {
   const [runTime, setRunTime] = useState(0);
   const [running, setRunning] = useState(false);
@@ -51,14 +52,17 @@ export const Benchmark: React.FC<BenchmarkProps> = (
   const spin = () => <div className="w-4 h-4 border-t-2 border-white rounded-full animate-spin"></div>;
 
   return (
-    <div className="flex items-center space-x-4 px-5">
-      <div className="text-gray-800 font-bold w-40 px-2">{name}</div> 
-      <button className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md"  onClick={async () => { await runFunc()}}>
-        {running ? spin() : 'Compute'}
-      </button>
-      <div className="text-gray-800 w-36 truncate">{runTime > 0 ? `${runTime} ms` : 'Run Time: 0ms'}</div>
-      {correctnessMark(result, expectedResult)}
-      <div className="text-gray-800 w-36">x: {result.x.toString()} y: {result.y.toString()}</div>
-    </div>
+    <>
+      <div className="flex items-center space-x-4 px-5">
+        <div className={`text-gray-800 w-40 px-2 ${bold ? 'font-bold' : ''}`}>{name}</div> 
+        <button className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md"  onClick={async () => { await runFunc()}}>
+          {running ? spin() : 'Compute'}
+        </button>
+        <div className="text-gray-800 w-36 truncate">{runTime > 0 ? `${runTime} ms` : 'Run Time: 0ms'}</div>
+        {correctnessMark(result, expectedResult)}
+        <div className="text-gray-800 w-36">x: {result.x.toString()} y: {result.y.toString()}</div>
+      </div>
+      <hr className='p-2'/>
+    </>
   );
 };

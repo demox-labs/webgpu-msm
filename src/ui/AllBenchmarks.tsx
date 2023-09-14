@@ -129,6 +129,7 @@ export const AllBenchmarks: React.FC = () => {
         expectedResult={expectedResult}
         msmFunc={webgpu_best_msm}
         postResult={postResult}
+        bold={true}
       />
       <Benchmark
         name={'Your MSM'}
@@ -137,6 +138,7 @@ export const AllBenchmarks: React.FC = () => {
         expectedResult={expectedResult}
         msmFunc={compute_msm}
         postResult={postResult}
+        bold={true}
       />
     </div>
   )
