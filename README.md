@@ -7,6 +7,7 @@
 - [FAQs](#faqs)
 - [Submission Instruction](#submission-instruction)
 - [Further Questions](#further-questions)
+- [Trouble Shooting](#trouble-shooting)
 - [Reference](#reference)
 
 ## Quick Start
@@ -156,8 +157,18 @@ Please include your implementation under the `submission` folder. The `compute_m
 
 If there are any questions about this prize, please ask in the zprize discord: https://discord.gg/DKqrz6F42D.
 
+## Trouble Shooting
+
+Common issues:
+* If you are unable to run the webgpu benchmarks, ensure you are using a webgpu-compatible browser.
+* If you are not able to load the test case data, be sure you have installed git LFS. You can either reclone the repo after installing git LFS or run `git lfs fetch && git lfs pull`.
+* If you run into general npm package errors, make sure you have nodejs v16 or later installed.
+* If you are using webgpu functions and getting all 0s as output, you may have hit an out of memory error in the gpu. Reduce your input size or consider breaking your computions into smaller steps.
+
 ## Reference
 
 [1] Scalar-multiplication algorithms. [https://cryptojedi.org/peter/data/eccss-20130911b.pdf](https://cryptojedi.org/peter/data/eccss-20130911b.pdf)
 
-[2] compute_msm functions in Typescript/WebGPU/WASM [https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts](https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts)
+[2] compute_msm functions in Typescript/WebGPU/WASM [https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts](https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts)j
+
+[3] wgsl reference [https://www.w3.org/TR/WGSL/](https://www.w3.org/TR/WGSL/)
