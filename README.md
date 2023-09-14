@@ -14,9 +14,9 @@
 
 Ensure you have:
 
+- [Git LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)  installed
 - [Node.js](https://nodejs.org) 16 or later installed
 - [Yarn](https://yarnpkg.com) v1 or v2 installed
-- [Git LFS](https://docs.github.com/en/repositories/working-with-files/managing-large-files/installing-git-large-file-storage)  installed
 
 Then run the following:
 
