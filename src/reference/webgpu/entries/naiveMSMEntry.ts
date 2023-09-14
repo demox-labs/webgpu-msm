@@ -8,8 +8,12 @@ import { u32ArrayToBigInts } from "../utils";
 import { IEntryInfo, IGPUInput, IGPUResult, IShaderCode, multipassEntryCreator } from "./multipassEntryCreator";
 import { GPUExecution } from "./multipassEntryCreator";
 
-export const naive_msm = async (flattenedPoints: Array<number>, scalars: Array<number>): Promise<{x: bigint, y: bigint}> => {
-  const [execution, entryInfo] = point_mul_multipass_info(flattenedPoints.length / 16, flattenedPoints, scalars, true);
+export const naive_msm = async (flattenedPoints: Uint32Array, scalars: Uint32Array): Promise<{x: bigint, y: bigint}> => {
+  const [execution, entryInfo] = point_mul_multipass_info(
+    flattenedPoints.length / 16,
+    flattenedPoints,
+    scalars,
+    true);
 
   const bufferResult = await multipassEntryCreator(execution, entryInfo);
   const bigIntResult = u32ArrayToBigInts(bufferResult || new Uint32Array(0));
@@ -34,8 +38,8 @@ export const naive_msm = async (flattenedPoints: Array<number>, scalars: Array<n
 
 export const point_mul_multipass_info = (
   numInputs: number,
-  affinePoints: Array<number>,
-  scalars: Array<number>,
+  affinePoints: Uint32Array,
+  scalars: Uint32Array,
   useInputs = true,
 ): [GPUExecution[], IEntryInfo] => {
   const baseModules = [U256WGSL, FieldModulusWGSL, CurveWGSL];

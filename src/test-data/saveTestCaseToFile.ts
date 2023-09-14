@@ -1,6 +1,6 @@
-import { Point } from '../reference/types';
+import { BigIntPoint } from '../reference/types';
 
-export const savePointsToFile = async (points: Point[]) => {
+export const savePointsToFile = async (points: BigIntPoint[]) => {
     const data = points.map(point => `{ x: ${point.x}, y: ${point.y}, t: ${point.t}, z: ${point.z}}`).join('\n');
     const blob = new Blob([data], { type: 'text;charset=utf-8;' });
     const url = URL.createObjectURL(blob);

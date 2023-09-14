@@ -1,7 +1,7 @@
-import { Point } from "../reference/types";
+import { BigIntPoint } from "../reference/types";
 
 export type TestCase = {
-  baseAffinePoints: Point[];
+  baseAffinePoints: BigIntPoint[];
   scalars: bigint[];
   expectedResult: { x: bigint, y: bigint };
 };
@@ -35,7 +35,7 @@ export const loadTestCase = async (testCase: PowersTestCase): Promise<TestCase> 
   const pointsFile = await fetch(`test-data/points/${testCase}-power-points.txt`);
   const pointsText = await pointsFile.text();
   const pointsLines = pointsText.trim().split('\n');
-  const points: Point[] = pointsLines.map(line => JSON.parse(line, (key, value) => {
+  const points: BigIntPoint[] = pointsLines.map(line => JSON.parse(line, (key, value) => {
     if (typeof value === 'string') {
       return BigInt(value.slice());
     }

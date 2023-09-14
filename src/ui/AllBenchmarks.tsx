@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Benchmark } from './Benchmark';
-import { generateRandomFields } from '../reference/webgpu/utils';
-import { Point } from '../reference/types';
+import { bigIntToU32Array, generateRandomFields } from '../reference/webgpu/utils';
+import { BigIntPoint, U32ArrayPoint } from '../reference/types';
 import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm } from '../reference/reference';
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
@@ -12,8 +12,10 @@ export const AllBenchmarks: React.FC = () => {
   const initialDefaultInputSize = 1_000;
   const [inputSize, setInputSize] = useState(initialDefaultInputSize);
   const [inputSizeDisabled, setInputSizeDisabled] = useState(false);
-  const [baseAffinePoints, setBaseAffinePoints] = useState<Point[]>([]);
-  const [scalars, setScalars] = useState<bigint[]>([]);
+  const [baseAffineBigIntPoints, setBaseAffineBigIntPoints] = useState<BigIntPoint[]>([]);
+  const [bigIntScalars, setBigIntScalars] = useState<bigint[]>([]);
+  const [u32Points, setU32Points] = useState<U32ArrayPoint[]>([]);
+  const [u32Scalars, setU32Scalars] = useState<Uint32Array[]>([]);
   const [expectedResult, setExpectedResult] = useState<{x: bigint, y: bigint} | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [benchmarkResults, setBenchmarkResults] = useState<any[][]>([["InputSize", "MSM Func", "Time (MS)"]]);
@@ -30,8 +32,18 @@ export const AllBenchmarks: React.FC = () => {
 
   const setTestCaseData = async (testCase: TestCase) => {
     setInputSizeDisabled(true);
-    setBaseAffinePoints(testCase.baseAffinePoints);
-    setScalars(testCase.scalars);
+    setBaseAffineBigIntPoints(testCase.baseAffinePoints);
+    const newU32Points = testCase.baseAffinePoints.map((point) => {
+      return {
+        x: bigIntToU32Array(point.x),
+        y: bigIntToU32Array(point.y),
+        t: bigIntToU32Array(point.t),
+        z: bigIntToU32Array(point.z),
+      }});
+    setU32Points(newU32Points);
+    setBigIntScalars(testCase.scalars);
+    const newU32Scalars = testCase.scalars.map((scalar) => bigIntToU32Array(scalar));
+    setU32Scalars(newU32Scalars);
     setExpectedResult(testCase.expectedResult);
   };
 
@@ -48,12 +60,22 @@ export const AllBenchmarks: React.FC = () => {
       const y = BigInt('8134280397689638111748378379571739274369602049665521098046934931245960532166');
       const t = BigInt('3446088593515175914550487355059397868296219355049460558182099906777968652023');
       const z = BigInt('1');
-      const point: Point = {x, y, t, z};
+      const point: BigIntPoint = {x, y, t, z};
       const newPoints = Array(inputSize).fill(point);
-      setBaseAffinePoints(newPoints);
+      setBaseAffineBigIntPoints(newPoints);
+      const newU32Points = newPoints.map((point) => {
+        return {
+          x: bigIntToU32Array(point.x),
+          y: bigIntToU32Array(point.y),
+          t: bigIntToU32Array(point.t),
+          z: bigIntToU32Array(point.z),
+        }});
+      setU32Points(newU32Points);
 
       const newScalars = generateRandomFields(inputSize);
-      setScalars(newScalars);
+      setBigIntScalars(newScalars);
+      const newU32Scalars = newScalars.map((scalar) => bigIntToU32Array(scalar));
+      setU32Scalars(newU32Scalars);
     }
     generateNewInputs();
     setComparisonResults([]);
@@ -76,32 +98,32 @@ export const AllBenchmarks: React.FC = () => {
       
       <Benchmark
         name={'Pippenger WebGPU MSM'}
-        baseAffinePoints={baseAffinePoints}
-        scalars={scalars}
+        baseAffinePoints={baseAffineBigIntPoints}
+        scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={webgpu_pippenger_msm}
         postResult={postResult}
       />
       <Benchmark
         name={'Naive WebGPU MSM'}
-        baseAffinePoints={baseAffinePoints}
-        scalars={scalars}
+        baseAffinePoints={u32Points}
+        scalars={u32Scalars}
         expectedResult={expectedResult}
         msmFunc={webgpu_compute_msm}
         postResult={postResult}
       />
       <Benchmark
         name={'Aleo Wasm'}
-        baseAffinePoints={baseAffinePoints}
-        scalars={scalars}
+        baseAffinePoints={baseAffineBigIntPoints}
+        scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={wasm_compute_msm}
         postResult={postResult}
       />
       <Benchmark
         name={'Your MSM'}
-        baseAffinePoints={baseAffinePoints}
-        scalars={scalars}
+        baseAffinePoints={baseAffineBigIntPoints}
+        scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={compute_msm}
         postResult={postResult}

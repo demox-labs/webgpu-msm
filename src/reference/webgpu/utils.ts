@@ -31,6 +31,14 @@ export const bigIntToU16Array = (beBigInt: bigint): Uint16Array => {
   return u16Array;
 };
 
+export const flattenU32s = (u32Arrays: Uint32Array[]): Uint32Array => {
+  const flattenedU32s = new Uint32Array(u32Arrays.length * u32Arrays[0].length);
+  u32Arrays.forEach((u32Array, index) => {
+    flattenedU32s.set(u32Array, index * u32Array.length);
+  });
+  return flattenedU32s;
+};
+
 // assume bigints are big endian 256-bit integers
 export const bigIntsToU32Array = (beBigInts: bigint[]): Uint32Array => {
   const intsAs32s = beBigInts.map(bigInt => bigIntToU32Array(bigInt));

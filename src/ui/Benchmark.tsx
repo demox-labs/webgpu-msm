@@ -1,19 +1,19 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { Point } from '../reference/types';
+import { BigIntPoint, U32ArrayPoint } from '../reference/types';
 import { CheckIcon } from '@heroicons/react/20/solid';
 import { XMarkIcon } from '@heroicons/react/20/solid';
 
 interface BenchmarkProps {
   name: string;
-  baseAffinePoints: Point[];
-  scalars: bigint[];
+  baseAffinePoints: BigIntPoint[] | U32ArrayPoint[];
+  scalars: bigint[] | Uint32Array[];
   expectedResult: {x: bigint, y: bigint} | null;
   msmFunc: (
-    baseAffinePoints: Point[],
-    scalars: bigint[]
-    ) => Promise<{x: bigint, y: bigint}>;
+    baseAffinePoints: BigIntPoint[] | U32ArrayPoint[],
+    scalars: bigint[] | Uint32Array[]
+    ) => Promise<{x: bigint, y: bigint}>
   postResult: (result: {x: bigint, y: bigint}, timeMS: number, msmFunc: string) => void;
 }
 

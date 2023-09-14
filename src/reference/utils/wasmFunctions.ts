@@ -1,5 +1,5 @@
 import { ALEO_FIELD_MODULUS } from "../params/AleoConstants";
-import { Point } from "../types";
+import { BigIntPoint } from "../types";
 import { loadWasmModule } from "../wasm-loader/wasm-loader";
 
 export const addFields = async (field1: string, field2: string): Promise<string> => {
@@ -153,9 +153,9 @@ export const msm = async (groups: string[], scalars: string[]): Promise<string> 
   return aleo.Address.msm(groups, scalars);
 };
 
-export const createRandomAffinePoints = async (inputSize: number): Promise<Point[]> => {
+export const createRandomAffinePoints = async (inputSize: number): Promise<BigIntPoint[]> => {
   const aleo = await loadWasmModule();
-  const points: Point[] = [];
+  const points: BigIntPoint[] = [];
   const regex = /x=(\d+),\s*y=(\d+)/;
   for (let i = 0; i < inputSize; i++) {
     const pk = new aleo.PrivateKey();
@@ -168,7 +168,7 @@ export const createRandomAffinePoints = async (inputSize: number): Promise<Point
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const y = BigInt(match![2]);
     const t = x * y % ALEO_FIELD_MODULUS;
-    const point: Point = { x, y, t, z: BigInt(1)};
+    const point: BigIntPoint = { x, y, t, z: BigInt(1)};
     points.push(point);
     if (points.length % 10000 === 0) {
       console.log(`Generated ${points.length} points`);
