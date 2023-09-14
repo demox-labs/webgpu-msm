@@ -67,19 +67,15 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
     ///
     // Need to setup our 256/C MSMs (T_1, T_2, ..., T_n). We'll do this
     // by via the bucket method for each MSM
-    let start = performance.now();
     const numMsms = 256/C;
     const msms = [];
     for (let i = 0; i < numMsms; i++) {
         msms.push(initializeMsmMap(fieldMath, C));
     }
-    let end = performance.now();
-    console.log(`Time taken to create 16 Maps: ${end - start} milliseconds`);
 
     ///
     /// BUCKET METHOD
     ///
-    start = performance.now();
     let scalarIndex = 0;
     let pointsIndex = 0;
     while (pointsIndex < points.length) {
@@ -89,21 +85,20 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
 
         const msmIndex = scalarIndex % msms.length;
         
-        const currentPoint = msms[msmIndex].get(scalar)!;
-        msms[msmIndex].set(scalar, currentPoint.add(pointToAdd));
+        const currentPoint = msms[msmIndex].get(scalar);
+        if (currentPoint !== undefined) {
+          msms[msmIndex].set(scalar, currentPoint.add(pointToAdd));
+        }
         
         scalarIndex += 1;
         if (scalarIndex % msms.length == 0) {
             pointsIndex += 1;
         }
     }
-    end = performance.now();
-    console.log(`Time taken to apply bucket method: ${end - start} milliseconds`);
 
     ///
     /// GPU INPUT SETUP & COMPUTATION
     ///
-    start = performance.now();
     const pointsConcatenated: bigint[] = [];
     const scalarsConcatenated: number[] = [];
     for (let i = 0; i < msms.length; i++) {
@@ -113,10 +108,7 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
         });
         scalarsConcatenated.push(...Array.from(msms[i].keys()))
     }
-    end = performance.now();
-    console.log(`Time taken to prep scalars and points for GPU inputs: ${end - start} milliseconds`);
 
-    start = performance.now();
     // Need to consider GPU buffer and memory limits so need to chunk
     // the concatenated inputs into reasonable sizes. The ratio of points
     // to scalars is 4:1 since we expanded the point object into its
@@ -127,11 +119,9 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
     const gpuResultsAsBigInts = [];
     const avgGpuChunkCalculationTimes = [];
     const avgU32ToBigIntConversionTime = [];
-    let pointMulCallTimes = 0
     for (let i = 0; i < chunkedPoints.length; i++) {
         const chunkCalculationStart = performance.now();
         const bufferResult = await point_mul({ u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, { u32Inputs: Uint32Array.from(chunkedScalars[i]), individualInputSize: FIELD_SIZE });
-        pointMulCallTimes += 1;
         const chunkCalculationEnd = performance.now();
         avgGpuChunkCalculationTimes.push(chunkCalculationEnd - chunkCalculationStart);
         
@@ -140,19 +130,11 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
         const u32End = performance.now();
         avgU32ToBigIntConversionTime.push(u32End - u32Start);
     }
-    end = performance.now();
-    console.log(`Total number of times point_mul was called: ${pointMulCallTimes}`);
-    console.log(`AVG time taken per each chunk: 
-        ${avgGpuChunkCalculationTimes.reduce((acc, curr) => acc + curr, 0) / avgGpuChunkCalculationTimes.length} milliseconds`);
-    console.log(`AVG time taken to convert the u32s back to bigInts: 
-        ${avgU32ToBigIntConversionTime.reduce((acc, curr) => acc + curr, 0) / avgU32ToBigIntConversionTime.length} milliseconds`);
-    console.log(`Total time taken for GPU calculations to finish: ${end - start} milliseconds`);
 
     ///
     /// CONVERT GPU RESULTS BACK TO EXTENDED POINTS
     ///
     const gpuResultsAsExtendedPoints: ExtPointType[] = [];
-    start = performance.now();
     for (let i = 0; i < gpuResultsAsBigInts.length; i += 4) {
         const x = gpuResultsAsBigInts[i];
         const y = gpuResultsAsBigInts[i + 1];
@@ -161,13 +143,10 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
         const extendedPoint = fieldMath.createPoint(x, y, t, z);
         gpuResultsAsExtendedPoints.push(extendedPoint);
     }
-    end = performance.now();
-    console.log(`Time taken to convert GPU results back to Extended Point Types: ${end - start} milliseconds`);
 
     ///
     /// SUMMATION OF SCALAR MULTIPLICATIONS FOR EACH MSM
     ///
-    start = performance.now();
     const msmResults = [];
     let currentSum = fieldMath.customEdwards.ExtendedPoint.ZERO;
     for (let i = 0; i < gpuResultsAsExtendedPoints.length; i++) {
@@ -180,27 +159,20 @@ export const pippinger_msm = async (points: ExtPointType[], scalars: number[], f
     }
     
     msmResults.push(currentSum);
-    end = performance.now();
-    console.log(`Time taken to sum up individual MSMs: ${end - start} milliseconds`);
 
     ///
     /// SOLVE FOR ORIGINAL MSM
     ///
-    start = performance.now();
     let originalMsmResult = msmResults[0];
     for (let i = 1; i < msmResults.length; i++) {
         originalMsmResult = originalMsmResult.multiplyUnsafe(BigInt(Math.pow(2, C)));
         originalMsmResult = originalMsmResult.add(msmResults[i]);
     }
-    end = performance.now();
-    console.log(`Time taken to solve for original MSM: ${end - start} milliseconds`);
 
     ///
     /// CONVERT TO AFFINE POINT FOR FINAL RESULT
     ///
-    start = performance.now();
     const affineResult = originalMsmResult.toAffine();
-    console.log('affineResult', affineResult);
     return { x: affineResult.x, y: affineResult.y };
 }
 

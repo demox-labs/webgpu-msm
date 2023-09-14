@@ -10,7 +10,6 @@ export const webgpu_pippenger_msm = async (
   scalars: bigint[]
 ) => {
   const fieldMath = new FieldMath();
-  console.log('baseAffinePoints', baseAffinePoints);
   const pointsAsU32s = baseAffinePoints.map(point => fieldMath.createPoint(point.x, point.y, point.t, point.z));
   const scalarsAsU16s = Array.from(bigIntsToU16Array(scalars));
   return await pippinger_msm(pointsAsU32s, scalarsAsU16s, fieldMath);
@@ -30,11 +29,10 @@ export const wasm_compute_msm = async (
   baseAffinePoints: Point[],
   scalars: bigint[]
   ): Promise<{x: bigint, y: bigint}> => {
-  console.log('baseAffinePoints', baseAffinePoints);
   const aleo = await loadWasmModule();
   const groups = baseAffinePoints.map(point => point.x.toString() + 'group');
   const aleoScalars = scalars.map(scalar => scalar.toString() + 'scalar');
-  const xresult = await aleo.Address.msm(groups, aleoScalars);
+  const xresult = aleo.Address.msm(groups, aleoScalars);
   const xNum = xresult.slice(0, xresult.indexOf('group'));
   return new FieldMath().getPointFromX(BigInt(xNum));
 };
