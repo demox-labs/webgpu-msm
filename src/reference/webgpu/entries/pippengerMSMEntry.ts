@@ -60,8 +60,7 @@ function chunkArray<T>(inputArray: T[], chunkSize = 20000): T[][] {
 } 
 
 export const pippinger_msm = async (
-  points: ExtPointType[], 
-  // uint32Arrays: Uint32Array[], 
+  points: ExtPointType[],
   scalars: number[], 
   fieldMath: FieldMath
   ) => {
@@ -73,7 +72,7 @@ export const pippinger_msm = async (
     // Need to setup our 256/C MSMs (T_1, T_2, ..., T_n). We'll do this
     // by via the bucket method for each MSM
     const numMsms = 256/C;
-    const msms = [];
+    const msms: Map<number, ExtPointType>[] = [];
     for (let i = 0; i < numMsms; i++) {
         msms.push(initializeMsmMap(fieldMath, C));
     }
@@ -118,12 +117,15 @@ export const pippinger_msm = async (
     // the concatenated inputs into reasonable sizes. The ratio of points
     // to scalars is 4:1 since we expanded the point object into its
     // x, y, t, z coordinates. 
-    const chunkedPoints = chunkArray(pointsConcatenated, 44000);
-    const chunkedScalars = chunkArray(scalarsConcatenated, 11000);
+    const chunkedPoints = chunkArray(pointsConcatenated, 100000);
+    const chunkedScalars = chunkArray(scalarsConcatenated, 25000);
 
     const gpuResultsAsBigInts = [];
     for (let i = 0; i < chunkedPoints.length; i++) {
-        const bufferResult = await point_mul({ u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, { u32Inputs: Uint32Array.from(chunkedScalars[i]), individualInputSize: FIELD_SIZE });
+        const bufferResult = await point_mul(
+          { u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, 
+          { u32Inputs: Uint32Array.from(chunkedScalars[i]), individualInputSize: FIELD_SIZE }
+        );
         
         gpuResultsAsBigInts.push(...u32ArrayToBigInts(bufferResult || new Uint32Array(0)));
     }
