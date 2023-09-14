@@ -35,7 +35,12 @@ export const loadTestCase = async (testCase: PowersTestCase): Promise<TestCase> 
   const pointsFile = await fetch(`test-data/points/${testCase}-power-points.txt`);
   const pointsText = await pointsFile.text();
   const pointsLines = pointsText.trim().split('\n');
-  const points: Point[] = pointsLines.map(line => JSON.parse(line));
+  const points: Point[] = pointsLines.map(line => JSON.parse(line, (key, value) => {
+    if (typeof value === 'string') {
+      return BigInt(value.slice());
+    }
+    return value;
+  }));
   const scalarsFile = await fetch(`test-data/scalars/${testCase}-power-scalars.txt`);
   const scalarsText = await scalarsFile.text();
   const scalarsLines = scalarsText.trim().split('\n');

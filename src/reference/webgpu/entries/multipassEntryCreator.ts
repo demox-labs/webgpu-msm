@@ -1,4 +1,4 @@
-import { workgroupSize } from "../params";
+import { WORKGROUP_SIZE } from "../params";
 
 /**
  * Creates and executes multipass pipeline. 
@@ -88,7 +88,7 @@ export const multipassEntryCreator = async (passes: IGPUExecution[], entryInfo: 
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(pipeline);
     passEncoder.setBindGroup(0, bindGroup);
-    passEncoder.dispatchWorkgroups(Math.ceil(entryInfo.numInputs / workgroupSize));
+    passEncoder.dispatchWorkgroups(Math.ceil(entryInfo.numInputs / WORKGROUP_SIZE));
     passEncoder.end();
 
     previousResultBuffers = resultBuffers;
