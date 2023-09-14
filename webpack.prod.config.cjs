@@ -58,4 +58,78 @@ const config = {
   ],
 };
 
-module.exports = config;
+const workerConfig = {
+  mode: "production",
+  cache: {
+    type: 'filesystem',
+    allowCollectingMemory: true
+  },
+  performance: {
+    hints: false
+  },
+  experiments: {
+    asyncWebAssembly: true,
+    syncWebAssembly: true,
+    topLevelAwait: true
+  },
+  target: 'webworker',
+  entry: {
+    wasmMSM: './src/workers/wasmMSM.ts',
+  },
+  output: {
+    pathinfo: false,
+    publicPath: '/',
+  },
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.wasm'],
+    alias: {
+      shared: path.resolve(__dirname, 'src', 'shared')
+    },
+    fallback: {
+      url: false,
+      os: false,
+      path: false,
+      stream: false,
+      crypto: require.resolve("crypto-browserify"),
+      http: false,
+      https: false,
+      buffer: require.resolve('buffer'),
+      stream: require.resolve('stream-browserify'),
+      assert: require.resolve('assert')
+    }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer']
+    }),
+
+    new webpack.ProvidePlugin({
+      process: 'process/browser'
+    }),
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/i,
+        exclude: /node_modules/,
+        type: 'javascript/auto'
+      },
+      {
+        test: /\.(ts|js)x?$/i,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              "@babel/preset-env",
+              "@babel/preset-typescript",
+            ],
+          },
+        },
+      },
+    ]
+  }
+};
+
+
+module.exports = [config, workerConfig];

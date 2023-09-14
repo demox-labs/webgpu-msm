@@ -4,6 +4,7 @@ import { loadWasmModule } from "./wasm-loader/wasm-loader";
 import { naive_msm } from "./webgpu/entries/naiveMSMEntry";
 import { bigIntsToU16Array, bigIntsToU32Array, flattenU32s } from "./webgpu/utils";
 import { pippinger_msm } from "./webgpu/entries/pippengerMSMEntry";
+import { wasmMSM } from "./workers/wasmMSM";
 
 export const webgpu_pippenger_msm = async (
   baseAffinePoints: BigIntPoint[] | U32ArrayPoint[],
@@ -46,3 +47,13 @@ export const webgpu_best_msm = async (
   ): Promise<{x: bigint, y: bigint}> => {
     return await webgpu_pippenger_msm(baseAffinePoints, scalars);
   };
+
+export const wasm_compute_msm_parallel = async (
+  baseAffinePoints: BigIntPoint[] | U32ArrayPoint[],
+  scalars: bigint[] | Uint32Array[]
+  ): Promise<{x: bigint, y: bigint}> => {
+  const groups = (baseAffinePoints as BigIntPoint[]).map(point => point.x.toString() + 'group');
+  const aleoScalars = (scalars as bigint[]).map(scalar => scalar.toString() + 'scalar');
+  const xNum = await wasmMSM(groups, aleoScalars);
+  return new FieldMath().getPointFromX(BigInt(xNum));
+};
