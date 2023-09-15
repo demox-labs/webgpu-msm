@@ -3,7 +3,7 @@ import { FieldModulusWGSL } from "../wgsl/FieldModulus";
 import { entry } from "./entryCreator"
 import { ExtPointType } from "@noble/curves/abstract/edwards";
 import { FieldMath } from "../../utils/FieldMath";
-import { bigIntsToU32Array, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
+import { bigIntsToU32Array, concatUint32Arrays, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
 import { U256WGSL } from "../wgsl/U256";
 import { EXT_POINT_SIZE, FIELD_SIZE } from "../params";
 
@@ -114,6 +114,7 @@ export const pippinger_msm = async (
     const chunkedScalars = chunkArray(scalarsConcatenated, 25000);
 
     const gpuResultsAsBigInts = [];
+    let gpuResultsAsUint32Array: Uint32Array = new Uint32Array(0);
     for (let i = 0; i < chunkedPoints.length; i++) {
         const bufferResult = await point_mul(
           { u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, 
@@ -121,6 +122,7 @@ export const pippinger_msm = async (
         );
         
         gpuResultsAsBigInts.push(...u32ArrayToBigInts(bufferResult || new Uint32Array(0)));
+        gpuResultsAsUint32Array = concatUint32Arrays(gpuResultsAsUint32Array, bufferResult || new Uint32Array(0));
     }
 
     ///
