@@ -110,8 +110,8 @@ export const pippinger_msm = async (
     // the concatenated inputs into reasonable sizes. The ratio of points
     // to scalars is 4:1 since we expanded the point object into its
     // x, y, t, z coordinates. 
-    const chunkedPoints = chunkArray(pointsConcatenated, 100000);
-    const chunkedScalars = chunkArray(scalarsConcatenated, 25000);
+    const chunkedPoints = chunkArray(pointsConcatenated, 44_000);
+    const chunkedScalars = chunkArray(scalarsConcatenated, 11_000);
 
     const gpuResultsAsBigInts = [];
     let gpuResultsAsUint32Array: Uint32Array = new Uint32Array(0);
