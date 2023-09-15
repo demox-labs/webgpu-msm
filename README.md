@@ -167,6 +167,8 @@ Common issues:
 * If you are not able to load the test case data, be sure you have installed git LFS. You can either reclone the repo after installing git LFS or run `git lfs fetch && git lfs pull`.
 * If you run into general npm package errors, make sure you have nodejs v16 or later installed.
 * If you are using webgpu functions and getting all 0s as output, you may have hit an out of memory error in the gpu. Reduce your input size or consider breaking your computions into smaller steps.
+* If you are running on a windows machine with multiple graphics cards (ie. integrated chip + dedicated card) you can force Chrome to use one of them via windows settings.
+Go to Settings -> Graphics Settings -> Custom options for apps -> Select / add Chrome -> Options -> Select graphics preference
 
 ## Reference
 
