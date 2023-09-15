@@ -63,8 +63,9 @@ export const multipassEntryCreator = async (passes: IGPUExecution[], entryInfo: 
     const bindGroup = createBindGroup(gpu, bindGroupLayout, inputBuffers, resultBuffers);
 
     // Create pipeline
-    const pipeline = gpu.createComputePipeline({
-      layout: gpu.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] }),
+    const layout = gpu.createPipelineLayout({ bindGroupLayouts: [bindGroupLayout] });
+    const pipeline = await gpu.createComputePipelineAsync({
+      layout: layout,
       compute: {
         module: shaderModule,
         entryPoint: execution.shader.entryPoint

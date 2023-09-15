@@ -35,10 +35,11 @@ export const entry = async(
 
   // Pipeline setup
 
-  const computePipeline = device.createComputePipeline({
-    layout: device.createPipelineLayout({
-      bindGroupLayouts: [bindGroupLayout]
-    }),
+  const layout = device.createPipelineLayout({
+    bindGroupLayouts: [bindGroupLayout]
+  });
+  const computePipeline = await device.createComputePipelineAsync({
+    layout: layout,
     compute: {
       module: module,
       entryPoint: "main"
