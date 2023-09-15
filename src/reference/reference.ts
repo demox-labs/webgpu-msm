@@ -20,9 +20,6 @@ export const webgpu_compute_msm = async (
   baseAffinePoints: BigIntPoint[] | U32ArrayPoint[],
   scalars: bigint[] | Uint32Array[]
   ): Promise<{x: bigint, y: bigint}> => {
-  // const flattenedPoints = (baseAffinePoints as U32ArrayPoint[]).flatMap(point => [point.x, point.y]);
-  // const pointsAsU32s = flattenU32s(flattenedPoints);
-  // const scalarsAsU32s = flattenU32s(scalars as Uint32Array[]);
   const flattenedPoints = (baseAffinePoints as BigIntPoint[]).flatMap(point => [point.x, point.y]);
   const pointsAsU32s = bigIntsToU32Array(flattenedPoints);
   const scalarsAsU32s = bigIntsToU32Array(scalars as bigint[]);

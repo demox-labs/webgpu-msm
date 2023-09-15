@@ -114,7 +114,6 @@ export const pippinger_msm = async (
     const chunkedScalars = chunkArray(scalarsConcatenated, 11_000);
 
     const gpuResultsAsBigInts = [];
-    let gpuResultsAsUint32Array: Uint32Array = new Uint32Array(0);
     for (let i = 0; i < chunkedPoints.length; i++) {
         const bufferResult = await point_mul(
           { u32Inputs: bigIntsToU32Array(chunkedPoints[i]), individualInputSize: EXT_POINT_SIZE }, 
@@ -122,7 +121,6 @@ export const pippinger_msm = async (
         );
         
         gpuResultsAsBigInts.push(...u32ArrayToBigInts(bufferResult || new Uint32Array(0)));
-        gpuResultsAsUint32Array = concatUint32Arrays(gpuResultsAsUint32Array, bufferResult || new Uint32Array(0));
     }
 
     ///
