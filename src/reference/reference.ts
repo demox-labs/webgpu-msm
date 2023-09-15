@@ -2,7 +2,7 @@ import { BigIntPoint, U32ArrayPoint } from "./types";
 import { FieldMath } from "./utils/FieldMath";
 import { loadWasmModule } from "./wasm-loader/wasm-loader";
 import { naive_msm } from "./webgpu/entries/naiveMSMEntry";
-import { bigIntsToU16Array, bigIntsToU32Array, flattenU32s } from "./webgpu/utils";
+import { bigIntsToU16Array, bigIntsToU32Array } from "./webgpu/utils";
 import { pippinger_msm } from "./webgpu/entries/pippengerMSMEntry";
 import { wasmMSM } from "./workers/wasmMSM";
 

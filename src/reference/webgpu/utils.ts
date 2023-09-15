@@ -128,3 +128,16 @@ export const chunkArray = (inputsArray: gpuU32Inputs[], batchSize: number): gpuU
 
   return chunkedArray;
 };
+
+export function concatUint32Arrays(array1: Uint32Array, array2: Uint32Array): Uint32Array {
+  // Create a new Uint32Array with a length equal to the sum of the lengths of array1 and array2
+  const result = new Uint32Array(array1.length + array2.length);
+
+  // Copy the elements from array1 into the new array
+  result.set(array1, 0);
+
+  // Copy the elements from array2 into the new array, starting at the index after the last element of array1
+  result.set(array2, array1.length);
+
+  return result;
+}
