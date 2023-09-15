@@ -1,7 +1,7 @@
 import React, {Fragment, useState } from 'react'
 import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import { PowersTestCase, TestCase, loadTestCase } from '../test-data/testCases'
+import { PowersTestCase } from '../test-data/testCases'
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ')
@@ -9,11 +9,11 @@ function classNames(...classes: string[]) {
 
 interface TestCaseDropDownProps {
   useRandomInputs: () => void;
-  setTestCaseData: (testCase: TestCase) => void;
+  loadAndSetData: (power: PowersTestCase) => void;
 }
 
 export const TestCaseDropDown: React.FC<TestCaseDropDownProps> = (
-  {useRandomInputs, setTestCaseData}
+  {useRandomInputs, loadAndSetData}
 ) => {
   const [selectedOption, setSelectedOption] = useState<string>('Random Inputs');
 
@@ -22,10 +22,9 @@ export const TestCaseDropDown: React.FC<TestCaseDropDownProps> = (
     useRandomInputs();
   }
 
-  const loadAndSetData = async (power: PowersTestCase) => {
+  const onSelect = async (power: PowersTestCase) => {
     setSelectedOption(`2^${power}`);
-    const testCase = await loadTestCase(power);
-    setTestCaseData(testCase);
+    loadAndSetData(power);
   };
 
   return (
@@ -66,7 +65,7 @@ export const TestCaseDropDown: React.FC<TestCaseDropDownProps> = (
                 <Menu.Item key={power}>
                   {({ active }) => (
                     <div
-                      onClick={async () => await loadAndSetData(power)}
+                      onClick={async () => await onSelect(power)}
                       className={classNames(
                         active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                         'block px-4 py-2 text-sm'

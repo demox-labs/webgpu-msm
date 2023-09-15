@@ -6,7 +6,7 @@ import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm, webgpu_best
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
 import { TestCaseDropDown } from './TestCaseDropDown';
-import { TestCase } from '../test-data/testCases';
+import { PowersTestCase, TestCase, loadTestCase } from '../test-data/testCases';
 
 export const AllBenchmarks: React.FC = () => {
   const initialDefaultInputSize = 1_000;
@@ -20,6 +20,7 @@ export const AllBenchmarks: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [benchmarkResults, setBenchmarkResults] = useState<any[][]>([["InputSize", "MSM Func", "Time (MS)"]]);
   const [comparisonResults, setComparisonResults] = useState<{ x: bigint, y: bigint, timeMS: number, msmFunc: string, inputSize: number }[]>([]);
+  const [disabledBenchmark, setDisabledBenchmark] = useState<boolean>(false);
 
   const postResult = (result: {x: bigint, y: bigint}, timeMS: number, msmFunc: string) => {
     const benchMarkResult = [inputSize, msmFunc, timeMS];
@@ -30,8 +31,14 @@ export const AllBenchmarks: React.FC = () => {
     }
   };
 
-  const setTestCaseData = async (testCase: TestCase) => {
+  const loadAndSetData = async (power: PowersTestCase) => {
     setInputSizeDisabled(true);
+    setDisabledBenchmark(true);
+    const testCase = await loadTestCase(power);
+    setTestCaseData(testCase);
+  }
+
+  const setTestCaseData = async (testCase: TestCase) => {
     setBaseAffineBigIntPoints(testCase.baseAffinePoints);
     const newU32Points = testCase.baseAffinePoints.map((point) => {
       return {
@@ -45,6 +52,7 @@ export const AllBenchmarks: React.FC = () => {
     const newU32Scalars = testCase.scalars.map((scalar) => bigIntToU32Array(scalar));
     setU32Scalars(newU32Scalars);
     setExpectedResult(testCase.expectedResult);
+    setDisabledBenchmark(false);
   };
 
   const useRandomInputs = () => {
@@ -53,6 +61,7 @@ export const AllBenchmarks: React.FC = () => {
   };
 
   useEffect(() => {
+    setDisabledBenchmark(true);
     async function generateNewInputs() {
       // creating random points is slow, so for now use a single fixed base.
       // const newPoints = await createRandomAffinePoints(inputSize);
@@ -79,6 +88,7 @@ export const AllBenchmarks: React.FC = () => {
     }
     generateNewInputs();
     setComparisonResults([]);
+    setDisabledBenchmark(false);
   }, [inputSize]);
   
   return (
@@ -92,12 +102,13 @@ export const AllBenchmarks: React.FC = () => {
           disabled={inputSizeDisabled}
           onChange={(e) => setInputSize(parseInt(e.target.value))}
         />
-        <TestCaseDropDown useRandomInputs={useRandomInputs} setTestCaseData={setTestCaseData}/>
+        <TestCaseDropDown useRandomInputs={useRandomInputs} loadAndSetData={loadAndSetData}/>
         <CSVExportButton data={benchmarkResults} filename={'msm-benchmark'} />
       </div>
       
       <Benchmark
         name={'Pippenger WebGPU MSM'}
+        disabled={disabledBenchmark}
         baseAffinePoints={baseAffineBigIntPoints}
         scalars={bigIntScalars}
         expectedResult={expectedResult}
@@ -106,6 +117,7 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Naive WebGPU MSM'}
+        disabled={disabledBenchmark}
         // baseAffinePoints={u32Points}
         // scalars={u32Scalars}
         baseAffinePoints={baseAffineBigIntPoints}
@@ -116,6 +128,7 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Aleo Wasm: Single Thread'}
+        disabled={disabledBenchmark}
         baseAffinePoints={baseAffineBigIntPoints}
         scalars={bigIntScalars}
         expectedResult={expectedResult}
@@ -124,6 +137,7 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Aleo Wasm: Web Workers'}
+        disabled={disabledBenchmark}
         baseAffinePoints={baseAffineBigIntPoints}
         scalars={bigIntScalars}
         expectedResult={expectedResult}
@@ -132,6 +146,7 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Our Best WebGPU MSM'}
+        disabled={disabledBenchmark}
         baseAffinePoints={baseAffineBigIntPoints}
         scalars={bigIntScalars}
         expectedResult={expectedResult}
@@ -141,6 +156,7 @@ export const AllBenchmarks: React.FC = () => {
       />
       <Benchmark
         name={'Your MSM'}
+        disabled={disabledBenchmark}
         baseAffinePoints={baseAffineBigIntPoints}
         scalars={bigIntScalars}
         expectedResult={expectedResult}

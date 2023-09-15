@@ -7,6 +7,7 @@ import { XMarkIcon } from '@heroicons/react/20/solid';
 
 interface BenchmarkProps {
   bold?: boolean;
+  disabled: boolean;
   name: string;
   baseAffinePoints: BigIntPoint[] | U32ArrayPoint[];
   scalars: bigint[] | Uint32Array[];
@@ -19,7 +20,7 @@ interface BenchmarkProps {
 }
 
 export const Benchmark: React.FC<BenchmarkProps> = (
-  {bold, name, baseAffinePoints, scalars, expectedResult, msmFunc, postResult}
+  {bold, disabled, name, baseAffinePoints, scalars, expectedResult, msmFunc, postResult}
   ) => {
   const [runTime, setRunTime] = useState(0);
   const [running, setRunning] = useState(false);
@@ -55,8 +56,8 @@ export const Benchmark: React.FC<BenchmarkProps> = (
     <>
       <div className="flex items-center space-x-4 px-5">
         <div className={`text-gray-800 w-40 px-2 ${bold ? 'font-bold' : ''}`}>{name}</div> 
-        <button className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md"  onClick={async () => { await runFunc()}}>
-          {running ? spin() : 'Compute'}
+        <button disabled={disabled} className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded-md"  onClick={async () => { await runFunc()}}>
+          {running || disabled ? spin() : 'Compute'}
         </button>
         <div className="text-gray-800 w-36 truncate">{runTime > 0 ? `${runTime} ms` : 'Run Time: 0ms'}</div>
         {correctnessMark(result, expectedResult)}
