@@ -3,9 +3,10 @@ import { FieldModulusWGSL } from "../wgsl/FieldModulus";
 import { entry } from "./entryCreator"
 import { ExtPointType } from "@noble/curves/abstract/edwards";
 import { FieldMath } from "../../utils/FieldMath";
-import { bigIntsToU32Array, concatUint32Arrays, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
+import { bigIntsToU32Array, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
 import { U256WGSL } from "../wgsl/U256";
 import { EXT_POINT_SIZE, FIELD_SIZE } from "../params";
+import { prune } from "../prune";
 
 /// Pippinger Algorithm Summary:
 /// 
@@ -193,7 +194,10 @@ const point_mul = async (
       }
       `;
   
-    const shaderModules = [U256WGSL, FieldModulusWGSL, CurveWGSL, shaderEntry];
+    const shaderCode = prune(
+      [U256WGSL, FieldModulusWGSL, CurveWGSL].join(''),
+      ['mul_point_32_bit_scalar']
+    );
   
-    return await entry([input1, input2], shaderModules, EXT_POINT_SIZE);
+    return await entry([input1, input2], shaderCode + shaderEntry, EXT_POINT_SIZE);
 }

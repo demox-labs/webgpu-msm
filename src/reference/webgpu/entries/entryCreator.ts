@@ -2,7 +2,7 @@ import { gpuU32Inputs } from "../utils";
 
 export const entry = async(
   inputData: gpuU32Inputs[],
-  shaderModules: string[],
+  shaderCode: string,
   u32SizePerOutput: number
   ) => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -10,11 +10,6 @@ export const entry = async(
   const allBuffers: GPUBuffer[] = [];
   
   const numInputs = inputData[0].u32Inputs.length / inputData[0].individualInputSize;
-
-  let shaderCode = '';
-  for (const shaderModule of shaderModules) {
-    shaderCode += shaderModule;
-  }
   
   const module = device.createShaderModule({
     code: shaderCode
