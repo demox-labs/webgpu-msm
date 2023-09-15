@@ -27,13 +27,14 @@ export const AllBenchmarks: React.FC = () => {
     const benchMarkResult = [inputSizeDisabled ? power : inputSize, msmFunc, timeMS];
     setBenchmarkResults([...benchmarkResults, benchMarkResult]);
     setComparisonResults([...comparisonResults, {x: result.x, y: result.y, timeMS, msmFunc, inputSize}]);
-    if (msmFunc === 'Aleo Wasm') {
+    if (msmFunc.includes('Aleo Wasm')) {
       setExpectedResult(result);
     }
   };
 
   const loadAndSetData = async (power: PowersTestCase) => {
     setInputSizeDisabled(true);
+    setInputSize(0);
     setDisabledBenchmark(true);
     setPower(`2^${power}`);
     const testCase = await loadTestCase(power);
@@ -58,8 +59,11 @@ export const AllBenchmarks: React.FC = () => {
   };
 
   const useRandomInputs = () => {
+    setDisabledBenchmark(true);
     setInputSizeDisabled(false);
+    setExpectedResult(null);
     setInputSize(initialDefaultInputSize);
+    setDisabledBenchmark(false);
   };
 
   useEffect(() => {
