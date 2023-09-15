@@ -67,7 +67,6 @@ export const AllBenchmarks: React.FC = () => {
   };
 
   useEffect(() => {
-    setDisabledBenchmark(true);
     async function generateNewInputs() {
       // creating random points is slow, so for now use a single fixed base.
       // const newPoints = await createRandomAffinePoints(inputSize);
@@ -94,7 +93,6 @@ export const AllBenchmarks: React.FC = () => {
     }
     generateNewInputs();
     setComparisonResults([]);
-    setDisabledBenchmark(false);
   }, [inputSize]);
   
   return (
