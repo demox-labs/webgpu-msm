@@ -6,6 +6,7 @@ import { FieldMath } from "../../utils/FieldMath";
 import { bigIntsToU32Array, concatUint32Arrays, gpuU32Inputs, u32ArrayToBigInts } from "../utils";
 import { U256WGSL } from "../wgsl/U256";
 import { EXT_POINT_SIZE, FIELD_SIZE } from "../params";
+import { forwardRef } from "react";
 
 /// Pippinger Algorithm Summary:
 /// 
@@ -48,7 +49,85 @@ function chunkArray<T>(inputArray: T[], chunkSize = 20000): T[][] {
     }
     
     return tempArray;
-} 
+}
+
+function addCpu(input: Map<number, ExtPointType[]>[]): Map<number, ExtPointType>[] {
+  const resultList: Map<number, ExtPointType>[] = [];
+  for (const msm of input) { 
+    const result: Map<number, ExtPointType> = new Map<number, ExtPointType>();
+    for (const [key, value] of msm.entries()) {
+      let currentSum = value[0];
+      for (let i = 1; i < value.length; i++) {
+          currentSum = currentSum.add(value[i]);
+      }
+      result.set(key, currentSum);
+    }
+    resultList.push(result);
+  }
+  return resultList;
+}
+
+async function addGpu(input: Map<number, ExtPointType[]>[], fieldMath: FieldMath): Promise<Map<number, ExtPointType>[]> {
+  const resultList: Map<number, ExtPointType>[] = [];
+  for (const msm of input) {
+    const result = new Map<number, ExtPointType>();
+    const keys = [];
+    const values: ExtPointType[][] = [];
+
+    // Create buckets of 16 points
+    for (let [key, value] of msm.entries()) {
+      keys.push(key);
+
+      let val = value.slice();
+      if (val.length === 16) {
+        values.push(val);
+      }
+      else if (val.length < 16) {
+        const numToFill = 16 - value.length;
+        for (let i = 0; i < numToFill; i++) {
+          val.push(fieldMath.customEdwards.ExtendedPoint.ZERO);
+        }
+
+        values.push(val);
+      } else {
+        const first16 = val.slice(0, 16);
+        const rest = val.slice(16);
+        let sum = fieldMath.createPoint(first16[15].ex, first16[15].ey, first16[15].et, first16[15].ez);
+        for (const point of rest) {
+          sum = sum.add(point);
+        }
+        first16[15] = sum;
+
+        values.push(first16);
+      }
+    }
+
+    // Put those 16 point buckets into the gpu
+    const flattendValues = values.flat();
+    const bigIntValues = flattendValues.map((x) => {
+      return [x.ex, x.ey, x.et, x.ez];
+    }).flat();
+    const gpuInput = bigIntsToU32Array(bigIntValues);
+    const res = await addPointLists(gpuInput, 16);
+    const resBigInts = u32ArrayToBigInts(res);
+    const resPoints: ExtPointType[] = [];
+    for (let i = 0; i < resBigInts.length; i += 4) {
+      const x = resBigInts[i];
+      const y = resBigInts[i + 1];
+      const t = resBigInts[i + 2];
+      const z = resBigInts[i + 3];
+      const extendedPoint = fieldMath.createPoint(x, y, t, z);
+      resPoints.push(extendedPoint);
+    }
+    for (let i = 0; i < keys.length; i++) {
+      result.set(keys[i], resPoints[i]);
+    }
+
+    resultList.push(result);
+  }
+
+  return resultList;
+}
 
 export const pippinger_msm = async (
   points: ExtPointType[],
@@ -63,35 +142,66 @@ export const pippinger_msm = async (
     // Need to setup our 256/C MSMs (T_1, T_2, ..., T_n). We'll do this
     // by via the bucket method for each MSM
     const numMsms = 256/C;
-    const msms: Map<number, ExtPointType>[] = [];
+
+    const FOOBAR: Map<number, ExtPointType[]>[] = [];
     for (let i = 0; i < numMsms; i++) {
-        msms.push(new Map<number, ExtPointType>());
+        FOOBAR.push(new Map<number, ExtPointType[]>());
     }
 
     ///
     /// BUCKET METHOD
     ///
-    let scalarIndex = 0;
-    let pointsIndex = 0;
-    while (pointsIndex < points.length) {
+    let s = 0;
+    let p = 0;
+    while (p < points.length) {
         
-        const scalar = scalars[scalarIndex];
-        const pointToAdd = points[pointsIndex];
+      const scalar = scalars[s];
+      const pointToAdd = points[p];
 
-        const msmIndex = scalarIndex % msms.length;
-        
-        const currentPoint = msms[msmIndex].get(scalar);
-        if (currentPoint === undefined) {
-          msms[msmIndex].set(scalar, pointToAdd);
-        } else {
-          msms[msmIndex].set(scalar, currentPoint.add(pointToAdd));
-        }
-        
-        scalarIndex += 1;
-        if (scalarIndex % msms.length == 0) {
-            pointsIndex += 1;
-        }
+      const msmIndex = s % FOOBAR.length;
+      
+      const currentPointList = FOOBAR[msmIndex].get(scalar);
+      if (currentPointList === undefined) {
+        FOOBAR[msmIndex].set(scalar,[pointToAdd]);
+      } else {
+        currentPointList.push(pointToAdd);
+      }
+      
+      s += 1;
+      if (s % FOOBAR.length == 0) {
+          p += 1;
+      }
     }
+    console.log('msms2', FOOBAR);
+
+    const msms = addCpu(FOOBAR);
+    // const msms = await addGpu(FOOBAR, fieldMath);
+
+    // const msms: Map<number, ExtPointType>[] = [];
+    // for (let i = 0; i < numMsms; i++) {
+    //   msms.push(new Map<number, ExtPointType>());
+    // }
+
+    // let scalarIndex = 0;
+    // let pointsIndex = 0;
+    // while (pointsIndex < points.length) {
+    //   const scalar = scalars[scalarIndex];
+    //   const pointToAdd = points[pointsIndex];
+
+    //   const msmIndex = scalarIndex % msms.length;
+      
+    //   const currentPoint = msms[msmIndex].get(scalar);
+    //   if (currentPoint === undefined) {
+    //     msms[msmIndex].set(scalar, pointToAdd);
+    //   } else {
+    //     msms[msmIndex].set(scalar, currentPoint.add(pointToAdd));
+    //   }
+      
+    //   scalarIndex += 1;
+    //   if (scalarIndex % msms.length == 0) {
+    //     pointsIndex += 1;
+    //   }
+    // }
 
     ///
     /// GPU INPUT SETUP & COMPUTATION
@@ -170,32 +280,59 @@ export const pippinger_msm = async (
 }
 
 const point_mul = async (
-    input1: gpuU32Inputs,
-    input2: gpuU32Inputs
-    ) => {
-    const shaderEntry = `
-      @group(0) @binding(0)
-      var<storage, read> input1: array<Point>;
-      @group(0) @binding(1)
-      var<storage, read> input2: array<u32>;
-      @group(0) @binding(2)
-      var<storage, read_write> output: array<Point>;
-  
-      @compute @workgroup_size(64)
-      fn main(
-        @builtin(global_invocation_id)
-        global_id : vec3<u32>
-      ) {
-        var extended_point = input1[global_id.x];
-        var scalar = input2[global_id.x];
-  
-        var result = mul_point_32_bit_scalar(extended_point, scalar);
-  
-        output[global_id.x] = result;
+  input1: gpuU32Inputs,
+  input2: gpuU32Inputs
+  ) => {
+  const shaderEntry = `
+    @group(0) @binding(0)
+    var<storage, read> input1: array<Point>;
+    @group(0) @binding(1)
+    var<storage, read> input2: array<u32>;
+    @group(0) @binding(2)
+    var<storage, read_write> output: array<Point>;
+
+    @compute @workgroup_size(64)
+    fn main(
+      @builtin(global_invocation_id)
+      global_id : vec3<u32>
+    ) {
+      var extended_point = input1[global_id.x];
+      var scalar = input2[global_id.x];
+
+      var result = mul_point_32_bit_scalar(extended_point, scalar);
+
+      output[global_id.x] = result;
+    }
+    `;
+
+  const shaderModules = [U256WGSL, FieldModulusWGSL, CurveWGSL, shaderEntry];
+
+  return await entry([input1, input2], shaderModules, EXT_POINT_SIZE);
+}
+
+export const addPointLists = async (input1: Uint32Array, arrSize: number) => {
+  const forLoopShaderEntry = `
+    @group(0) @binding(0)
+    var<storage, read> input1: array<array<Point, ${arrSize}>>;
+    @group(0) @binding(1)
+    var<storage, read_write> output: array<Point>;
+
+    @compute @workgroup_size(64)
+    fn main(
+      @builtin(global_invocation_id) global_id : vec3<u32>
+    ) {
+
+      let pointsBucket = input1[global_id.x];
+      var result = pointsBucket[0];
+      for (var i = 1u; i < ${arrSize}u; i = i + 1u) {
+        result = add_points(result, pointsBucket[i]);
       }
-      `;
+      output[global_id.x] = result;
+    }
+    `;
+
+  const shaderModules = [U256WGSL, FieldModulusWGSL, CurveWGSL, forLoopShaderEntry];
   
-    const shaderModules = [U256WGSL, FieldModulusWGSL, CurveWGSL, shaderEntry];
-  
-    return await entry([input1, input2], shaderModules, EXT_POINT_SIZE);
+  const res =  await entry([{ u32Inputs: input1, individualInputSize: arrSize * EXT_POINT_SIZE }], shaderModules, 32);
+  return res;
 }
