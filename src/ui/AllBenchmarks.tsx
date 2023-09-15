@@ -11,6 +11,7 @@ import { PowersTestCase, TestCase, loadTestCase } from '../test-data/testCases';
 export const AllBenchmarks: React.FC = () => {
   const initialDefaultInputSize = 1_000;
   const [inputSize, setInputSize] = useState(initialDefaultInputSize);
+  const [power, setPower] = useState<string>('2^0');
   const [inputSizeDisabled, setInputSizeDisabled] = useState(false);
   const [baseAffineBigIntPoints, setBaseAffineBigIntPoints] = useState<BigIntPoint[]>([]);
   const [bigIntScalars, setBigIntScalars] = useState<bigint[]>([]);
@@ -23,7 +24,7 @@ export const AllBenchmarks: React.FC = () => {
   const [disabledBenchmark, setDisabledBenchmark] = useState<boolean>(false);
 
   const postResult = (result: {x: bigint, y: bigint}, timeMS: number, msmFunc: string) => {
-    const benchMarkResult = [inputSize, msmFunc, timeMS];
+    const benchMarkResult = [inputSizeDisabled ? power : inputSize, msmFunc, timeMS];
     setBenchmarkResults([...benchmarkResults, benchMarkResult]);
     setComparisonResults([...comparisonResults, {x: result.x, y: result.y, timeMS, msmFunc, inputSize}]);
     if (msmFunc === 'Aleo Wasm') {
@@ -34,6 +35,7 @@ export const AllBenchmarks: React.FC = () => {
   const loadAndSetData = async (power: PowersTestCase) => {
     setInputSizeDisabled(true);
     setDisabledBenchmark(true);
+    setPower(`2^${power}`);
     const testCase = await loadTestCase(power);
     setTestCaseData(testCase);
   }
