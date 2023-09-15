@@ -4,8 +4,8 @@
 - [Prize Desription](#prize-description)
 - [Judging](#judging)
 - [Prize Allocation](#prize-allocation)
-- [FAQs](#faqs)
 - [Submission Instruction](#submission-instruction)
+- [FAQs](#faqs)
 - [Further Questions](#further-questions)
 - [Trouble Shooting](#trouble-shooting)
 - [Reference](#reference)
@@ -57,7 +57,7 @@ The implementation must provide the following interface in JavaScript: `compute_
     
 1.  The function name is `compute_msm`
     
-2.  There are two input vectors: baseAffinePoints for a vector of elliptic curve points and scalars for a vector of finite field elements. There are two options for how the inputs are ingested, using `bigint`s or `Uint32Array`s:
+2.  There are two input vectors: baseAffinePoints for a vector of elliptic curve affine points and scalars for a vector of finite field elements. There are two options for how the inputs are ingested, using `bigint`s or `Uint32Array`s:
 
     a.
     ```
@@ -98,11 +98,11 @@ Submissions will be analyzed for both correctness and performance. All submissio
 
 We have provided test case data and answers to sanity-check your msm function against, as well as multiple msm implementations to check against.
 
-The final correctness of the submission will be tested using randomly sampled test inputs/outputs that are not disclosed to the competitors during the competition in addition to the test input/output distributed to the competitor. All these test cases will be generated using Aleo's reference implementation. Submissions failed in any test cases will be judged as incorrect and lose the opportunity to win the prize.
+The final correctness of the submission will be tested using randomly sampled test inputs/outputs that are not disclosed to the competitors during the competition in addition to the test input/output distributed to the competitor. All these test cases will be generated using Aleo's reference wasm implementation. Submissions failed in any test cases will be judged as incorrect and lose the opportunity to win the prize.
 
 ### Performance
 
-To evaluate the performance of each submission, the prize committee will sample a large number of input vectors at random, in terms of both the input vector length and the point values. The input vector length will be sampled between 2^16 and 2^20. Then, we compute the multi-scalar multiplication using the submission. The submitted score will be the relative speedup from the provided best webgpu msm implementation, averaged across many trials.
+To evaluate the performance of each submission, the prize committee will sample a large number of input vectors at random, in terms of both the input vector length and the point values. The input vector length will be sampled between 2^16 and 2^20. Then, we will compute the multi-scalar multiplication using the submission. The submitted score will be the relative speedup from the provided best webgpu msm implementation, averaged across many trials.
 
 In addition, all submissions will be manually reviewed by the prize committee.
 
@@ -113,6 +113,16 @@ The baseline will be the Demox Labs WebGPU MSM implementation over BLS12-377 G1.
 ## Prize Allocation
 
 Prizes will be given out in good faith and in the sole discretion of the prize committee.
+
+### Timeline
+* August 1 - 2023 Registration Opens
+* September 15 - Competition Begins
+* February - Submission Deadline
+* March - Winners Announced
+
+## Submission Instruction
+
+Please include your implementation under the `submission` folder. The `compute_msm` function in `submission/submission.ts` will be run when benchmarking your submission.
 
 ## FAQs
 
@@ -136,11 +146,6 @@ The competition encourages the use of widely supported web technologies. There a
 
 Access to evaluation platforms will not be provided. The benchmarking aims to test solutions on various commodity devices and seeks general browser environment improvements. Most WASM features that work within Chrome v115 are allowed, including multithreading through web workers.
 
-### Where can I get more details about the competition?
-
-You can find further information in the provided specification document and participate in discussions on the relevant platform.
-For more specific inquiries, feel free to join the ongoing discussion or send a direct message for assistance.
-
 ### Is WebGPU included in this prize category?
 
 Yes! WebGPU may be used for any amount of the submission implementation.
@@ -149,13 +154,11 @@ Yes! WebGPU may be used for any amount of the submission implementation.
 
 You can use all of the WASM features that work within chrome v115. Multithreading is allowed for instance but browsers don't have threads so you have to use web workers to accomplish this using something like: https://github.com/GoogleChromeLabs/wasm-bindgen-rayon.
 
-## Submission Instruction
-
-Please include your implementation under the `submission` folder. The `compute_msm` function in `submission/submission.ts` will be run when benchmarking your submission.
-
 ## Further Questions
 
-If there are any questions about this prize, please ask in the zprize discord: https://discord.gg/DKqrz6F42D.
+If there are any questions about this prize:
+* Ask in the zprize discord: https://discord.gg/DKqrz6F42D.
+* Consult the zprize website: https://www.zprize.io/
 
 ## Trouble Shooting
 
@@ -172,3 +175,5 @@ Common issues:
 [2] compute_msm functions in Typescript/WebGPU/WASM [https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts](https://github.com/demox-labs/webgpu-msm/blob/main/src/reference/reference.ts)j
 
 [3] wgsl reference [https://www.w3.org/TR/WGSL/](https://www.w3.org/TR/WGSL/)
+
+[4] aleo wasm reference [https://github.com/demox-labs/aleo/blob/gpu-expose/wasm/src/account/address.rs#L167](https://github.com/demox-labs/aleo/blob/gpu-expose/wasm/src/account/address.rs#L167)
