@@ -43,7 +43,7 @@ export class FieldMath {
     // Create the point object
     const topPoint = aleoEdwards.ExtendedPoint.fromAffine({ x: x_field, y: y });
 
-    // modulus of the bls12-377 subgroup Scalar Field
+    // modulus of the twisted Edwards BLS-12 subgroup Scalar Field
     const multipliedTopPoint = topPoint.multiplyUnsafe(this.subgroupCharacteristic).toAffine();
 
     if (multipliedTopPoint.x === BigInt(0) && multipliedTopPoint.y === BigInt(1)) {
