@@ -108,7 +108,7 @@ In addition, all submissions will be manually reviewed by the prize committee.
 
 ### Hardware & Benchmarks
 
-The baseline will be the Demox Labs WebGPU MSM implementation over the [twisted Edwards BLS-12](https://docs.rs/ark-ed-on-bls12-377/latest/ark_ed_on_bls12_377/), which is the companion curve to the BLS12-377 curve. This baseline is originally implemented in typescript and wgsl. Submissions must beat this baseline by at least 10% in order to be eligible for the prize.
+The baseline will be the Demox Labs WebGPU MSM implementation over BLS12-377 G1. This baseline is originally implemented in typescript and wgsl. Submissions must beat this baseline by at least 10% in order to be eligible for the prize.
 
 ## Prize Allocation
 
@@ -136,7 +136,7 @@ Yes, you are allowed to use WebGPU and multithreading (web workers) to enhance p
 
 ### What elliptic curve will be used in this competition?
 
-The competition will use the [twisted Edwards BLS-12](https://docs.rs/ark-ed-on-bls12-377/latest/ark_ed_on_bls12_377/), which is the companion curve to the BLS12-377 curve.
+The competition will use BLS12-377 as the elliptic curve.
 
 ### Is there a preferred web technology for this track? Are there any restrictions on the technologies we can use?
 
