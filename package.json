@@ -12,6 +12,7 @@
     "generatePointsTestFile": "ts-node --project ts-config-utility.json ./src/test-data/createRandomAffinePoints.ts"
   },
   "dependencies": {
+    "@demox-labs/gpu-wasm-expose": "^0.3.25",
     "@headlessui/react": "^1.7.16",
     "@heroicons/react": "^2.0.18",
     "@noble/curves": "1.0.0",

@@ -1,7 +1,6 @@
-import init, * as Aleo from './aleo-wasm-web';
+import * as Aleo from '@demox-labs/gpu-wasm-expose';
 import { expose } from 'threads/worker';
 
-await init();
 await Aleo.initThreadPool(Math.max(1, navigator.hardwareConcurrency - 2));
 
 export const wasmMSM = async (groups: string[], scalars: string[]): Promise<string> => {

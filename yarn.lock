@@ -1290,6 +1290,11 @@
   resolved "https://registry.yarnpkg.com/@csstools/selector-specificity/-/selector-specificity-2.2.0.tgz#2cbcf822bf3764c9658c4d2e568bd0c0cb748016"
   integrity sha512-+OJ9konv95ClSTOJCmMZqpd5+YGsB2S+x6w3E1oaM8UuR5j8nTNHYSz8c9BEPGDOCMQYIEEGlVPj/VY64iTbGw==
 
+"@demox-labs/gpu-wasm-expose@^0.3.25":
+  version "0.3.25"
+  resolved "https://registry.yarnpkg.com/@demox-labs/gpu-wasm-expose/-/gpu-wasm-expose-0.3.25.tgz#9f62a6d76df033e946b19b44fecfdb12ba9d2b6c"
+  integrity sha512-XcrTmOl+dOWJ5CahoEosWBoWyCqDKrSD9leGdwfVUhby+/jo28siHsiJtmPEk4+b/IV88O6IFOtcHMxM/JZm0g==
+
 "@discoveryjs/json-ext@^0.5.0":
   version "0.5.7"
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
