@@ -87,6 +87,30 @@ export const generateRandomFields = (inputSize: number): bigint[] => {
   return randomBigInts;
 };
 
+export const bigIntBufferLE = (bigInt: bigint, bigIntSize = 256): Buffer => {
+  const hexString = bigInt.toString(16).padStart(bigIntSize / 4, '0');
+  const bytes = Buffer.from(hexString, 'hex');
+  return bytes.reverse();
+};
+
+export const bigIntsToBufferLE = (bigInts: bigint[], bigIntSize = 256): Buffer => {
+  const bigIntBuffers = bigInts.map(bigInt => bigIntBufferLE(bigInt, bigIntSize));
+  return Buffer.concat(bigIntBuffers);
+};
+
+export const readBigIntsFromBufferLE = (buffer: Buffer, bigIntSize = 256): bigint[] => {
+  const totalBigInts = buffer.length / (bigIntSize / 8);
+  const bigInts: bigint[] = [];
+  for (let i = 0; i < totalBigInts; i++) {
+    const singleBigIntBuffer = buffer.slice(i * (bigIntSize / 8), (i + 1) * (bigIntSize / 8));
+    const bigIntBufferString = singleBigIntBuffer.reverse().toString('hex');
+    const singleBigInt = BigInt('0x' + bigIntBufferString);
+    bigInts.push(singleBigInt);
+  }
+
+  return bigInts;
+}
+
 export const convertBigIntsToWasmFields = (bigInts: bigint[]): string[] => {
   return bigInts.map(bigInt => bigInt.toString() + 'field');
 };

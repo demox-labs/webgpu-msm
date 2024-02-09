@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Benchmark } from './Benchmark';
-import { bigIntToU32Array, generateRandomFields } from '../reference/webgpu/utils';
+import { bigIntToU32Array, bigIntsToBufferLE, generateRandomFields } from '../reference/webgpu/utils';
 import { BigIntPoint, U32ArrayPoint } from '../reference/types';
-import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm, webgpu_best_msm, wasm_compute_msm_parallel } from '../reference/reference';
+import { webgpu_compute_msm, wasm_compute_msm, webgpu_pippenger_msm, webgpu_best_msm, wasm_compute_msm_parallel, wasm_compute_msm_parallel_buffer } from '../reference/reference';
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
 import { TestCaseDropDown } from './TestCaseDropDown';
@@ -17,6 +17,8 @@ export const AllBenchmarks: React.FC = () => {
   const [bigIntScalars, setBigIntScalars] = useState<bigint[]>([]);
   const [u32Points, setU32Points] = useState<U32ArrayPoint[]>([]);
   const [u32Scalars, setU32Scalars] = useState<Uint32Array[]>([]);
+  const [bufferPoints, setBufferPoints] = useState<Buffer>(Buffer.alloc(0));
+  const [bufferScalars, setBufferScalars] = useState<Buffer>(Buffer.alloc(0));
   const [expectedResult, setExpectedResult] = useState<{x: bigint, y: bigint} | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [benchmarkResults, setBenchmarkResults] = useState<any[][]>([["InputSize", "MSM Func", "Time (MS)"]]);
@@ -51,9 +53,20 @@ export const AllBenchmarks: React.FC = () => {
         z: bigIntToU32Array(point.z),
       }});
     setU32Points(newU32Points);
+
+    const xyArray: bigint[] = [];
+    testCase.baseAffinePoints.map((point) => {
+      xyArray.push(point.x);
+      xyArray.push(point.y);
+    });
+    const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+    setBufferPoints(pointsBufferLE);
+    
     setBigIntScalars(testCase.scalars);
     const newU32Scalars = testCase.scalars.map((scalar) => bigIntToU32Array(scalar));
     setU32Scalars(newU32Scalars);
+    const scalarBuffer = bigIntsToBufferLE(testCase.scalars, 256);
+    setBufferScalars(scalarBuffer);
     setExpectedResult(testCase.expectedResult);
     setDisabledBenchmark(false);
   };
@@ -85,11 +98,20 @@ export const AllBenchmarks: React.FC = () => {
           z: bigIntToU32Array(point.z),
         }});
       setU32Points(newU32Points);
+      const xyArray: bigint[] = [];
+      newPoints.map((point) => {
+        xyArray.push(point.x);
+        xyArray.push(point.y);
+      });
+      const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+      setBufferPoints(pointsBufferLE);
 
       const newScalars = generateRandomFields(inputSize);
       setBigIntScalars(newScalars);
       const newU32Scalars = newScalars.map((scalar) => bigIntToU32Array(scalar));
       setU32Scalars(newU32Scalars);
+      const scalarBuffer = bigIntsToBufferLE(newScalars, 256);
+      setBufferScalars(scalarBuffer);
     }
     generateNewInputs();
     setComparisonResults([]);
@@ -146,6 +168,15 @@ export const AllBenchmarks: React.FC = () => {
         scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={wasm_compute_msm_parallel}
+        postResult={postResult}
+      />
+      <Benchmark
+        name={'Aleo Wasm: Web Workers Buffer Input'}
+        disabled={disabledBenchmark}
+        baseAffinePoints={bufferPoints}
+        scalars={bufferScalars}
+        expectedResult={expectedResult}
+        msmFunc={wasm_compute_msm_parallel_buffer}
         postResult={postResult}
       />
       <Benchmark
