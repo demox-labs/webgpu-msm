@@ -52,9 +52,19 @@ export const AllBenchmarks: React.FC = () => {
         z: bigIntToU32Array(point.z, 384),
       }});
     setU32Points(newU32Points);
+
+    const xyArray: bigint[] = [];
+    testCase.baseAffinePoints.map((point) => {
+      xyArray.push(point.x);
+      xyArray.push(point.y);
+    });
+    const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+    setBufferPoints(pointsBufferLE);
     setBigIntScalars(testCase.scalars);
     const newU32Scalars = testCase.scalars.map((scalar) => bigIntToU32Array(scalar));
     setU32Scalars(newU32Scalars);
+    const scalarBuffer = bigIntsToBufferLE(testCase.scalars, 256);
+    setBufferScalars(scalarBuffer);
     setExpectedResult(testCase.expectedResult);
     setDisabledBenchmark(false);
   };
