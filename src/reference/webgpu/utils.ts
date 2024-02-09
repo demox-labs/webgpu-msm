@@ -1,4 +1,5 @@
 import { ALEO_FIELD_MODULUS } from "../params/AleoConstants";
+import { BigIntPoint } from "../types";
 
 export interface gpuU32Inputs {
   u32Inputs: Uint32Array;
@@ -13,7 +14,7 @@ export const bigIntsToU16Array = (beBigInts: bigint[]): Uint16Array => {
 }
 
 export const bigIntToU16Array = (beBigInt: bigint): Uint16Array => {
-  const numBits = 256;
+  const numBits = 384;
   const bitsPerElement = 16;
   const numElements = numBits / bitsPerElement;
   const u16Array = new Uint16Array(numElements);
@@ -36,18 +37,17 @@ export const flattenU32s = (u32Arrays: Uint32Array[]): Uint32Array => {
   return flattenedU32s;
 };
 
-// assume bigints are big endian 256-bit integers
-export const bigIntsToU32Array = (beBigInts: bigint[]): Uint32Array => {
-  const intsAs32s = beBigInts.map(bigInt => bigIntToU32Array(bigInt));
-  const u32Array = new Uint32Array(beBigInts.length * 8);
+// assume bigints are big endian 384-bit integers
+export const bigIntsToU32Array = (beBigInts: bigint[], bigIntSize = 256): Uint32Array => {
+  const intsAs32s = beBigInts.map(bigInt => bigIntToU32Array(bigInt, bigIntSize));
+  const u32Array = new Uint32Array(beBigInts.length * bigIntSize / 32);
   intsAs32s.forEach((intAs32, index) => {u32Array.set(intAs32, index * 8)});
   return u32Array;
 };
 
-export const bigIntToU32Array = (beBigInt: bigint): Uint32Array => {
-  const numBits = 256;
+export const bigIntToU32Array = (beBigInt: bigint, bigIntSize = 256): Uint32Array => {
   const bitsPerElement = 32;
-  const numElements = numBits / bitsPerElement;
+  const numElements = bigIntSize / bitsPerElement;
   const u32Array = new Uint32Array(numElements);
   const mask = (BigInt(1) << BigInt(bitsPerElement)) - BigInt(1); // Create a mask for the lower 32 bits
 
@@ -60,10 +60,34 @@ export const bigIntToU32Array = (beBigInt: bigint): Uint32Array => {
   return u32Array;
 };
 
-export const u32ArrayToBigInts = (u32Array: Uint32Array): bigint[] => {
+export const bigIntBufferLE = (bigInt: bigint, bigIntSize = 256): Buffer => {
+  const hexString = bigInt.toString(16).padStart(bigIntSize / 4, '0');
+  const bytes = Buffer.from(hexString, 'hex');
+  return bytes.reverse();
+};
+
+export const bigIntsToBufferLE = (bigInts: bigint[], bigIntSize = 256): Buffer => {
+  const bigIntBuffers = bigInts.map(bigInt => bigIntBufferLE(bigInt, bigIntSize));
+  return Buffer.concat(bigIntBuffers);
+};
+
+export const readBigIntsFromBufferLE = (buffer: Buffer, bigIntSize = 256): bigint[] => {
+  const totalBigInts = buffer.length / (bigIntSize / 8);
+  const bigInts: bigint[] = [];
+  for (let i = 0; i < totalBigInts; i++) {
+    const singleBigIntBuffer = buffer.slice(i * (bigIntSize / 8), (i + 1) * (bigIntSize / 8));
+    const bigIntBufferString = singleBigIntBuffer.reverse().toString('hex');
+    const singleBigInt = BigInt('0x' + bigIntBufferString);
+    bigInts.push(singleBigInt);
+  }
+
+  return bigInts;
+}
+
+export const u32ArrayToBigInts = (u32Array: Uint32Array, bigIntSize = 256): bigint[] => {
   const bigInts = [];
-  const chunkSize = 8;
   const bitsPerElement = 32;
+  const chunkSize = bigIntSize / bitsPerElement;
 
   for (let i = 0; i < u32Array.length; i += chunkSize) {
     let bigInt = BigInt(0);

@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Benchmark } from './Benchmark';
-import { bigIntToU32Array, generateRandomFields } from '../reference/webgpu/utils';
+import { bigIntToU32Array, bigIntsToBufferLE, generateRandomFields } from '../reference/webgpu/utils';
 import { BigIntPoint, U32ArrayPoint } from '../reference/types';
-import { wasm_compute_bls12_377_msm, wasm_compute_msm,  wasm_compute_msm_parallel } from '../reference/reference';
+import { wasm_compute_bl12_377_msm_buffer, wasm_compute_bls12_377_msm, wasm_compute_msm,  wasm_compute_msm_parallel } from '../reference/reference';
 import { compute_msm } from '../submission/submission';
 import CSVExportButton from './CSVExportButton';
 import { TestCaseDropDown } from './TestCaseDropDown';
@@ -17,6 +17,8 @@ export const AllBenchmarks: React.FC = () => {
   const [bigIntScalars, setBigIntScalars] = useState<bigint[]>([]);
   const [u32Points, setU32Points] = useState<U32ArrayPoint[]>([]);
   const [u32Scalars, setU32Scalars] = useState<Uint32Array[]>([]);
+  const [bufferPoints, setBufferPoints] = useState<Buffer>(Buffer.alloc(0));
+  const [bufferScalars, setBufferScalars] = useState<Buffer>(Buffer.alloc(0));
   const [expectedResult, setExpectedResult] = useState<{x: bigint, y: bigint} | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [benchmarkResults, setBenchmarkResults] = useState<any[][]>([["InputSize", "MSM Func", "Time (MS)"]]);
@@ -45,9 +47,9 @@ export const AllBenchmarks: React.FC = () => {
     setBaseAffineBigIntPoints(testCase.baseAffinePoints);
     const newU32Points = testCase.baseAffinePoints.map((point) => {
       return {
-        x: bigIntToU32Array(point.x),
-        y: bigIntToU32Array(point.y),
-        z: bigIntToU32Array(point.z),
+        x: bigIntToU32Array(point.x, 384),
+        y: bigIntToU32Array(point.y, 384),
+        z: bigIntToU32Array(point.z, 384),
       }});
     setU32Points(newU32Points);
     setBigIntScalars(testCase.scalars);
@@ -68,7 +70,6 @@ export const AllBenchmarks: React.FC = () => {
   useEffect(() => {
     async function generateNewInputs() {
       // creating random points is slow, so for now use a single fixed base.
-      // const newPoints = await createRandomAffinePoints(inputSize);
       const x = BigInt('111871295567327857271108656266735188604298176728428155068227918632083036401841336689521497731900230387779623820740');
       const y = BigInt('76860045326390600098227152997486448974650822224305058012700629806287380625419427989664237630603922765089083164740');
       const z = BigInt('1');
@@ -77,16 +78,25 @@ export const AllBenchmarks: React.FC = () => {
       setBaseAffineBigIntPoints(newPoints);
       const newU32Points = newPoints.map((point) => {
         return {
-          x: bigIntToU32Array(point.x),
-          y: bigIntToU32Array(point.y),
-          z: bigIntToU32Array(point.z),
+          x: bigIntToU32Array(point.x, 384),
+          y: bigIntToU32Array(point.y, 384),
+          z: bigIntToU32Array(point.z, 384),
         }});
       setU32Points(newU32Points);
+      const xyArray: bigint[] = [];
+      newPoints.map((point) => {
+        xyArray.push(point.x);
+        xyArray.push(point.y);
+      });
+      const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+      setBufferPoints(pointsBufferLE);
 
       const newScalars = generateRandomFields(inputSize);
       setBigIntScalars(newScalars);
       const newU32Scalars = newScalars.map((scalar) => bigIntToU32Array(scalar));
       setU32Scalars(newU32Scalars);
+      const scalarBuffer = bigIntsToBufferLE(newScalars, 256);
+      setBufferScalars(scalarBuffer);
     }
     generateNewInputs();
     setComparisonResults([]);
@@ -114,6 +124,15 @@ export const AllBenchmarks: React.FC = () => {
         scalars={bigIntScalars}
         expectedResult={expectedResult}
         msmFunc={wasm_compute_bls12_377_msm}
+        postResult={postResult}
+      />
+      <Benchmark
+        name={'Aleo Wasm: Buffer Input'}
+        disabled={disabledBenchmark}
+        baseAffinePoints={bufferPoints}
+        scalars={bufferScalars}
+        expectedResult={expectedResult}
+        msmFunc={wasm_compute_bl12_377_msm_buffer}
         postResult={postResult}
       />
       <Benchmark
