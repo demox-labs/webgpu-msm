@@ -59,7 +59,7 @@ export const AllBenchmarks: React.FC = () => {
       xyArray.push(point.x);
       xyArray.push(point.y);
     });
-    const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+    const pointsBufferLE = bigIntsToBufferLE(xyArray, 256);
     setBufferPoints(pointsBufferLE);
     
     setBigIntScalars(testCase.scalars);
@@ -103,7 +103,7 @@ export const AllBenchmarks: React.FC = () => {
         xyArray.push(point.x);
         xyArray.push(point.y);
       });
-      const pointsBufferLE = bigIntsToBufferLE(xyArray, 384);
+      const pointsBufferLE = bigIntsToBufferLE(xyArray, 256);
       setBufferPoints(pointsBufferLE);
 
       const newScalars = generateRandomFields(inputSize);

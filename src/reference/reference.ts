@@ -62,7 +62,7 @@ export const wasm_compute_msm_parallel_buffer = async (
     const scalarsArray = readBigIntsFromBufferLE(scalars as Buffer, 256);
     const aleoScalars = scalarsArray.map(scalar => scalar.toString() + 'scalar');
 
-    const xypoints = readBigIntsFromBufferLE(baseAffinePoints as Buffer, 384);
+    const xypoints = readBigIntsFromBufferLE(baseAffinePoints as Buffer, 256);
     const groups: string[] = [];
     xypoints.map((num, index) => {
       if (index % 2 === 0) {
