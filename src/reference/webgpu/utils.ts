@@ -102,8 +102,10 @@ export const readBigIntsFromBufferLE = (buffer: Buffer, bigIntSize = 256): bigin
   const totalBigInts = buffer.length / (bigIntSize / 8);
   const bigInts: bigint[] = [];
   for (let i = 0; i < totalBigInts; i++) {
+        // references original buffer memory
     const singleBigIntBuffer = buffer.slice(i * (bigIntSize / 8), (i + 1) * (bigIntSize / 8));
-    const bigIntBufferString = singleBigIntBuffer.reverse().toString('hex');
+    const copyBuffer = Buffer.from(singleBigIntBuffer);
+    const bigIntBufferString = copyBuffer.reverse().toString('hex');
     const singleBigInt = BigInt('0x' + bigIntBufferString);
     bigInts.push(singleBigInt);
   }
