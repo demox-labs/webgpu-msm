@@ -53,11 +53,11 @@ Achieve the fastest MSM run in a browser over a range of input vector lengths an
 
 ### Constraints
 
-The implementation must provide the following interface in JavaScript: `compute_msm = async (baseAffinePoints: BigIntPoint[] | U32ArrayPoint[], scalars: bigint[] | Uint32Array[]): Promise<{x: bigint, y: bigint}>`
+The implementation must provide the following interface in JavaScript: `compute_msm = async (baseAffinePoints: BigIntPoint[] | U32ArrayPoint[] | Buffer, scalars: bigint[] | Uint32Array[]| Buffer): Promise<{x: bigint, y: bigint}>`
     
 1.  The function name is `compute_msm`
     
-2.  There are two input vectors: baseAffinePoints for a vector of elliptic curve affine points and scalars for a vector of finite field elements. There are two options for how the inputs are ingested, using `bigint`s or `Uint32Array`s:
+2.  There are two input vectors: baseAffinePoints for a vector of elliptic curve affine points and scalars for a vector of finite field elements. There are three options for how the inputs are ingested, using `bigint`s or `Uint32Array`s or `Buffer`s:
 
     a.
     ```
@@ -71,6 +71,7 @@ The implementation must provide the following interface in JavaScript: `compute_
     ```
     b.
     ```
+    BigEndian
     U32ArrayPoint: {
       x: Uint32Array,
       y: Uint32Array,
@@ -78,6 +79,12 @@ The implementation must provide the following interface in JavaScript: `compute_
       z: Uint32Array
     }
     scalar: Uint32Array
+    ```
+    c.
+    ```
+    LittleEndian
+    points: Buffer,
+    scalars: Buffer
     ```
 
     Note -- the inputs are affine points, so the `z` property will be `1n` or `[0, 0, 0, 0, 0, 0, 0, 1]`. The `t` property is the field multiplication of `x` by `y`.
@@ -89,6 +96,64 @@ The implementation must provide the following interface in JavaScript: `compute_
 -   The submissions will be evaluated in a browser context on a variety of consumer-grade hardware.
     
 -   All submissions must include documentation (in English) sufficient to understand the approach being taken.
+
+4. Do I have to provide support for all three of the input types?
+
+-   No. You only need to take one of the three types as inputs to the `msm_compute` function, and you may pass in whichever input type you'd like to accept in the `AllBenchmarks.tsx` file. You may cast your inputs to whatever type you'd like to accept, and [casting will not affect the runtime performance](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html#type-assertions).
+For example:
+```
+export const compute_msm = async (
+  baseAffinePoints: BigIntPoint[] | U32ArrayPoint[] | Buffer,
+  scalars: bigint[] | Uint32Array[] | Buffer
+  ): Promise<{x: bigint, y: bigint}> => {
+  const pointsAsBigIntPoint = baseAffinePoints as BigIntPoint[];
+  const pointsAsUint32ArrayBigEndian = baseAffinePoints as Uint32Array[];
+  const pointsAsBufferLittleEndian = baseAffinePoints as Buffer;
+  .
+  .
+  .
+  }
+```
+
+For passing in whichever input type you'd like to accept, modify the Benchmark for your msm in the `AllBenchmarks.tsx` file.
+```
+<Benchmark
+  name={'Your bigInt MSM'}
+  disabled={disabledBenchmark}
+  baseAffinePoints={baseAffineBigIntPoints}
+  scalars={bigIntScalars}
+  expectedResult={expectedResult}
+  msmFunc={compute_msm}
+  postResult={postResult}
+  bold={true}
+/>
+```
+
+```
+<Benchmark
+  name={'Your buffer MSM'}
+  disabled={disabledBenchmark}
+  baseAffinePoints={bufferPoints}
+  scalars={bufferScalars}
+  expectedResult={expectedResult}
+  msmFunc={compute_msm}
+  postResult={postResult}
+  bold={true}
+/>
+```
+
+```
+<Benchmark
+  name={'Your u32 MSM'}
+  disabled={disabledBenchmark}
+  baseAffinePoints={u32Points}
+  scalars={u32Scalars}
+  expectedResult={expectedResult}
+  msmFunc={compute_msm}
+  postResult={postResult}
+  bold={true}
+/>
+```
 
 ## Judging
 
